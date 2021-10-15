@@ -107,6 +107,5 @@ ENV/
 *.synctex.gz
 *.tex
 
-# Data
-/data
-/out
+# CSV files
+*.csv
