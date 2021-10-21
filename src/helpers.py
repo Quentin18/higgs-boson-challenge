@@ -36,6 +36,18 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
                 shuffled_tx[start_index:end_index]
 
 
+def split_data(x, y, ratio, seed=1):
+    """Split the dataset based on the split ratio."""
+    np.random.seed(seed)
+    n = x.shape[0]
+    split_idx = int(n * ratio)
+    indices = np.random.permutation(n)
+    training_idx, test_idx = indices[:split_idx], indices[split_idx:]
+    training_x, test_x = x[training_idx], x[test_idx]
+    training_y, test_y = y[training_idx], y[test_idx]
+    return training_x, test_x, training_y, test_y
+
+
 def sigmoid(t):
     """Apply the sigmoid function on t."""
     return 1 / (1 + np.exp(-t))
