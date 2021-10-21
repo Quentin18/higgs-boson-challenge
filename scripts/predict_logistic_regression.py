@@ -10,7 +10,7 @@ sys.path.append('../src')
 # Import functions
 from proj1_helpers import (create_csv_submission, load_csv_data, predict_labels,
                            standardize)
-from implementations import logistic_regression_GD
+from implementations import logistic_regression
 
 DATA_DIRECTORY = '../data'
 DATA_TRAIN_PATH = os.path.join(DATA_DIRECTORY, 'train.csv')
@@ -41,10 +41,10 @@ tX = standardize(tX)
 print('2/5 Run logistic regression')
 initial_w = np.zeros((tX.shape[1], 1))
 max_iters = 1000
-gamma = 1e-6
+gamma = 0.01
 threshold = 1e-8
-w, loss = logistic_regression_GD(y, tX, initial_w, max_iters, gamma,
-                                 threshold, info=True)
+w, loss = logistic_regression(y, tX, initial_w, max_iters, gamma,
+                              threshold, info=True, sgd=True)
 print('w =', w)
 print('Loss:', loss)
 
