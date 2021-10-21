@@ -17,7 +17,8 @@ DATA_TRAIN_PATH = os.path.join(DATA_DIRECTORY, 'train.csv')
 DATA_TEST_PATH = os.path.join(DATA_DIRECTORY, 'test.csv')
 
 OUTPUT_DIRECTORY = '../out'
-OUTPUT_PATH = os.path.join(OUTPUT_DIRECTORY, 'predictions_logistic_regression.csv')
+OUTPUT_PATH = os.path.join(OUTPUT_DIRECTORY,
+                           'predictions_logistic_regression.csv')
 
 # Extract archives if needed
 for csv_filename in (DATA_TRAIN_PATH, DATA_TEST_PATH):
@@ -32,17 +33,19 @@ if not os.path.exists(OUTPUT_DIRECTORY):
 
 # Load the train data
 print('1/5 Load train data')
-y, tX, ids = load_csv_data(DATA_TRAIN_PATH)
+y, tX, ids = load_csv_data(DATA_TRAIN_PATH, label_b=0)
 # Standardize data
 tX = standardize(tX)
 
 # Logistic regression
 print('2/5 Run logistic regression')
 initial_w = np.zeros((tX.shape[1], 1))
-max_iters = 10
-gamma = 0.01
+max_iters = 1000
+gamma = 1e-6
 threshold = 1e-8
-w, loss = logistic_regression_GD(y, tX, initial_w, max_iters, gamma, threshold)
+w, loss = logistic_regression_GD(y, tX, initial_w, max_iters, gamma,
+                                 threshold, info=True)
+print('w =', w)
 print('Loss:', loss)
 
 # Load test data

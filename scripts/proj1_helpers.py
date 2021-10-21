@@ -4,10 +4,12 @@ import csv
 import numpy as np
 
 
-def load_csv_data(data_path, sub_sample=False):
+def load_csv_data(data_path, sub_sample=False, label_b=-1):
     """
     Loads data and returns y (class labels), tX (features)
     and ids (event ids).
+
+    The label_b argument must be -1 or 0 (default: -1).
     """
     y = np.genfromtxt(data_path, delimiter=',', skip_header=1, dtype=str,
                       usecols=1)
@@ -17,7 +19,7 @@ def load_csv_data(data_path, sub_sample=False):
 
     # convert class labels from strings to binary (-1,1)
     yb = np.ones(len(y))
-    yb[np.where(y == 'b')] = -1
+    yb[np.where(y == 'b')] = label_b
 
     # sub-sample
     if sub_sample:
