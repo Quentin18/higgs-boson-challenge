@@ -5,12 +5,13 @@ import zipfile
 import numpy as np
 
 # Add src to path to import implementations
-sys.path.append('../src')
+sys.path.append('..\src')
 
 # Import functions
-from proj1_helpers import (create_csv_submission, load_csv_data, predict_labels,
-                           standardize)
-from implementations import logistic_regression
+from proj1_helpers import (create_csv_submission, load_csv_data, predict_labels)
+from implementations import *
+from data import *
+
 
 DATA_DIRECTORY = '../data'
 DATA_TRAIN_PATH = os.path.join(DATA_DIRECTORY, 'train.csv')
@@ -33,29 +34,34 @@ if not os.path.exists(OUTPUT_DIRECTORY):
 
 # Load the train data
 print('1/5 Load train data')
-y, tX, ids = load_csv_data(DATA_TRAIN_PATH, label_b=0)
+y, tX, ids = load_csv_data(DATA_TRAIN_PATH,sub_sample=False, label_b=0)
 # Standardize data
+tX=replace_empty_with_mean(tX) 
 tX = standardize(tX)
 
 # Logistic regression
 print('2/5 Run logistic regression')
 initial_w = np.zeros((tX.shape[1], 1))
+#initial_w,_=least_squares(y,tX)
 max_iters = 1000
-gamma = 0.01
+gamma = 0.05
 threshold = 1e-8
 w, loss = logistic_regression(y, tX, initial_w, max_iters, gamma,
-                              threshold, info=True, sgd=True)
+                              threshold, info=True, sgd=False)
 print('w =', w)
 print('Loss:', loss)
 
 # Load test data
 print('3/5 Load test data')
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
+tX_test=replace_empty_with_mean(tX_test)
 tX_test = standardize(tX_test)
+tX_test = np.c_[np.ones((tX_test.shape[0], 1)), tX_test]
 
 # Generate predictions
 print('4/5 Generate predictions')
-y_pred = predict_labels(w, tX_test)
+y_pred = predict_labels(w, tX_test,label_b=0)
+get_proportion(y_pred)
 
 # Create submission
 print('5/5 Create submission')

@@ -52,7 +52,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma,
     """Logistic regression using gradient descent or SGD."""
     losses = []
     tx = np.c_[np.ones((y.shape[0], 1)), tx]
-    w = np.append(initial_w, 1)
+    w = np.insert(initial_w, 0,0)
     for iter in range(max_iters):
         # Stochastic gradient descent
         if sgd:
@@ -77,7 +77,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma,
         if iter > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break
 
-    return w[:-1], loss
+    return w, loss
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma,
@@ -86,7 +86,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma,
     """Regularized logistic regression using gradient descent or SGD."""
     losses = []
     tx = np.c_[np.ones((y.shape[0], 1)), tx]
-    w = np.append(initial_w, 1)
+    w = np.insert(initial_w,0, 0)
     for iter in range(max_iters):
         # Stochastic gradient descent
         if sgd:
@@ -111,4 +111,4 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma,
         if iter > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break
 
-    return w[:-1], loss
+    return w, loss

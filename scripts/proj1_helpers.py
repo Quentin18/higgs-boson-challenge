@@ -30,11 +30,15 @@ def load_csv_data(data_path, sub_sample=False, label_b=-1):
     return yb, input_data, ids
 
 
-def predict_labels(weights, data):
-    """Generates class predictions given weights, and a test data matrix."""
+def predict_labels(weights, data, label_b=-1):
+    """Generates class predictions given weights, and a test data matrix.
+
+    The label_b argument must be -1 or 0 (default: -1).
+    """
+    border=(label_b+1)/2
     y_pred = np.dot(data, weights)
-    y_pred[np.where(y_pred <= 0)] = -1
-    y_pred[np.where(y_pred > 0)] = 1
+    y_pred[np.where(y_pred <= border)] = -1
+    y_pred[np.where(y_pred > border)] = 1
 
     return y_pred
 
@@ -53,7 +57,3 @@ def create_csv_submission(ids, y_pred, name):
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({'Id': int(r1), 'Prediction': int(r2)})
 
-
-def standardize(x):
-    """Outputs the matrix x after normalization."""
-    return (x - np.mean(x, axis=0)) / np.std(x, axis=0)
