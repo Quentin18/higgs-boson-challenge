@@ -50,11 +50,14 @@ def ridge_regression(y, tx, lambda_):
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma,
                         threshold=1e-8, info=False, info_step=100,
-                        sgd=False, batch_size=1):
+                        sgd=False, agd=False, batch_size=1):
     """Logistic regression using gradient descent or SGD."""
     losses = []
     tx = np.c_[np.ones((y.shape[0], 1)), tx]
     w = np.insert(initial_w, 0, 0)
+    if agd:
+        # Init variables for agd
+        z, t = np.copy(w), 1
     for iter in range(max_iters):
         # Stochastic gradient descent
         if sgd:
@@ -62,6 +65,16 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma,
                 grad = logistic_regression_gradient(
                     minibatch_y, minibatch_tx, w)
                 w = w - gamma * grad
+
+        # Accelerated gradient descent
+        elif agd:
+            grad = logistic_regression_gradient(y, tx, z)
+            w_next = z - gamma * grad
+            t_next = (1 + np.sqrt(1 + 4 * t**2)) / 2
+            z = w_next + (w_next - w) * (t - 1) / t_next
+            w = w_next
+            t = t_next
+
         # Gradient descent
         else:
             grad = logistic_regression_gradient(y, tx, w)
@@ -72,7 +85,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma,
 
         # Display information
         if info and iter % info_step == 0:
-            print(f'Iteration = {iter}, loss = {loss}')
+            print(f'Iter: {iter:05}/{max_iters} - Loss: {loss:.2f}')
 
         # Convergence criterion
         losses.append(loss)
