@@ -1,15 +1,22 @@
-# -*- coding: utf-8 -*-
-"""Some helper functions for project 1."""
+"""
+Some helper functions for project 1.
+"""
 import csv
+
 import numpy as np
 
 
-def load_csv_data(data_path, sub_sample=False, label_b=-1):
-    """
-    Loads data and returns y (class labels), tX (features)
-    and ids (event ids).
+def load_csv_data(data_path: str, sub_sample: bool = False,
+                  label_b: int = -1) -> tuple:
+    """Loads data from a csv file.
 
-    The label_b argument must be -1 or 0 (default: -1).
+    Args:
+        data_path (str): path of data file.
+        sub_sample (bool, optional): return a subsambple. Defaults to False.
+        label_b (int, optional): label of "b" event (-1 or 0). Defaults to -1.
+
+    Returns:
+        tuple: y (class labels), tX (features) and ids (event ids).
     """
     y = np.genfromtxt(data_path, delimiter=',', skip_header=1, dtype=str,
                       usecols=1)
@@ -17,11 +24,11 @@ def load_csv_data(data_path, sub_sample=False, label_b=-1):
     ids = x[:, 0].astype(np.int)
     input_data = x[:, 2:]
 
-    # convert class labels from strings to binary (-1,1)
-    yb = np.ones(len(y))
+    # Convert class labels from strings to binary (-1, 1) or (0, 1)
+    yb = np.ones(len(y), dtype=int)
     yb[np.where(y == 'b')] = label_b
 
-    # sub-sample
+    # Creates a sub-sample if needed
     if sub_sample:
         yb = yb[::50]
         input_data = input_data[::50]
@@ -30,25 +37,39 @@ def load_csv_data(data_path, sub_sample=False, label_b=-1):
     return yb, input_data, ids
 
 
-def predict_labels(weights, data, label_b=-1):
+def predict_labels(weights: np.ndarray, data: np.ndarray,
+                   label_b: int = -1) -> np.ndarray:
     """Generates class predictions given weights, and a test data matrix.
 
-    The label_b argument must be -1 or 0 (default: -1).
+    Args:
+        weights (np.ndarray): vector of weights.
+        data (np.ndarray): matrix of test data.
+        label_b (int, optional): label of "b" event (-1 or 0). Defaults to -1.
+
+    Returns:
+        np.ndarray: class predictions.
     """
-    border=(label_b+1)/2
+    border = (label_b + 1) / 2
     y_pred = np.dot(data, weights)
-    y_pred[np.where(y_pred <= border)] = -1
+
+    # Select class label
+    y_pred[np.where(y_pred <= border)] = label_b
     y_pred[np.where(y_pred > border)] = 1
+
+    # Convert result to array of int
+    y_pred = y_pred.astype(int)
 
     return y_pred
 
 
-def create_csv_submission(ids, y_pred, name):
-    """
-    Creates an output file in .csv format for submission to Kaggle or AIcrowd
-    Arguments: ids (event ids associated with each prediction)
-               y_pred (predicted class labels)
-               name (string name of .csv output file to be created)
+def create_csv_submission(ids: np.ndarray, y_pred: np.ndarray, name: str):
+    """Creates an output file in csv format for submission to
+    Kaggle or AIcrowd.
+
+    Args:
+        ids (np.ndarray): event ids associated with each prediction.
+        y_pred (np.ndarray): predicted class labels.
+        name (str): name of csv output file to be created.
     """
     with open(name, 'w') as csvfile:
         fieldnames = ['Id', 'Prediction']
@@ -56,4 +77,3 @@ def create_csv_submission(ids, y_pred, name):
         writer.writeheader()
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({'Id': int(r1), 'Prediction': int(r2)})
-
