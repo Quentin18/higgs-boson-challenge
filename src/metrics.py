@@ -1,8 +1,8 @@
 """
 Score and performance functions.
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
