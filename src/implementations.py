@@ -119,7 +119,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma,
 
         # Display information
         if info and iter % info_step == 0:
-            print(f'Iteration = {iter}, loss = {loss}')
+            print(f'Iter: {iter:05}/{max_iters} - Loss: {loss:.2f}')
 
         # Convergence criterion
         losses.append(loss)
