@@ -17,7 +17,9 @@ from helpers import drop_columns_nan, split_data
 from implementations import least_squares, logistic_regression
 from metrics import accuracy_score, confusion_matrix, plot_confusion_matrix
 
-CLASSIFIER = 'logistic_regression'  # classifier to use
+# Classifier to use
+CLASSIFIER = 'logistic_regression'
+# CLASSIFIER = 'least_squares'
 
 
 def main():
@@ -49,11 +51,11 @@ def main():
     elif CLASSIFIER == 'logistic_regression':
         x_te = np.c_[np.ones((y_te.shape[0], 1)), x_te]
         initial_w = np.zeros((x_tr.shape[1], 1))
-        max_iters = 2000
-        gamma = 1e-2
+        max_iters = 10000
+        gamma = 1e-6
         threshold = 1e-8
         w, _ = logistic_regression(y_tr, x_tr, initial_w, max_iters, gamma,
-                                threshold, info=True, sgd=True)
+                                threshold, info=True, agd=True)
 
     else:
         print('Unknown classifier')
