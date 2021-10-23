@@ -38,22 +38,25 @@ def load_csv_data(data_path: str, sub_sample: bool = False,
 
 
 def predict_labels(weights: np.ndarray, data: np.ndarray,
-                   label_b: int = -1) -> np.ndarray:
+                   label_b_in: int = -1, label_b_out: int = -1) -> np.ndarray:
     """Generates class predictions given weights, and a test data matrix.
 
     Args:
         weights (np.ndarray): vector of weights.
         data (np.ndarray): matrix of test data.
-        label_b (int, optional): label of "b" event (-1 or 0). Defaults to -1.
+        label_b_in (int, optional): label of "b" event in input data
+        (-1 or 0). Defaults to -1.
+        label_b_out (int, optional): label of "b" event out input data
+        (-1 or 0). Defaults to -1.
 
     Returns:
         np.ndarray: class predictions.
     """
-    border = (label_b + 1) / 2
+    border = (label_b_in + 1) / 2
     y_pred = np.dot(data, weights)
 
     # Select class label
-    y_pred[np.where(y_pred <= border)] = label_b
+    y_pred[np.where(y_pred <= border)] = label_b_out
     y_pred[np.where(y_pred > border)] = 1
 
     # Convert result to array of int

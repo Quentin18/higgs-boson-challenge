@@ -63,7 +63,7 @@ def main():
 
     # Predict
     print('[5/7] Predict')
-    y_pred = predict_labels(w, x_te, label_b=0)
+    y_pred = predict_labels(w, x_te, label_b_in=0, label_b_out=0)
 
     # Confusion matrix
     print('[6/7] Confusion matrix:')
