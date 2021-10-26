@@ -5,6 +5,13 @@ import csv
 
 import numpy as np
 
+from path import add_src_to_path
+
+# Add src to path to import implementations
+add_src_to_path()
+
+from helpers import sigmoid
+
 
 def load_csv_data(data_path: str, sub_sample: bool = False,
                   label_b: int = -1) -> tuple:
@@ -38,7 +45,8 @@ def load_csv_data(data_path: str, sub_sample: bool = False,
 
 
 def predict_labels(weights: np.ndarray, data: np.ndarray,
-                   label_b_in: int = -1, label_b_out: int = -1) -> np.ndarray:
+                   label_b_in: int = -1, label_b_out: int = -1,
+                   use_sigmoid: bool = False) -> np.ndarray:
     """Generates class predictions given weights, and a test data matrix.
 
     Args:
@@ -48,12 +56,17 @@ def predict_labels(weights: np.ndarray, data: np.ndarray,
         (-1 or 0). Defaults to -1.
         label_b_out (int, optional): label of "b" event out input data
         (-1 or 0). Defaults to -1.
+        use_sigmoid (bool, optional): True to use the sigmoid function to
+        predict labels. Defaults to False.
 
     Returns:
         np.ndarray: class predictions.
     """
     border = (label_b_in + 1) / 2
-    y_pred = np.dot(data, weights)
+    if use_sigmoid:
+        y_pred = sigmoid(np.dot(data, weights))
+    else:
+        y_pred = np.dot(data, weights)
 
     # Select class label
     y_pred[np.where(y_pred <= border)] = label_b_out
