@@ -127,3 +127,29 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma,
             break
 
     return w, loss
+
+
+def adagrad(y, tx, lambda_, initial_w, max_iters, info=False, info_step=100):
+    """Adaptative gradient method for regularized logistic regression."""
+    q = 0
+    gamma = 1
+    delta = 1e-5
+    tx = np.c_[np.ones((y.shape[0], 1)), tx]
+    w = np.insert(initial_w, 0, 0)
+    for iter in range(max_iters):
+        # Compute gradient.
+        grad = reg_logistic_regression_gradient(y, tx, w, lambda_)
+
+        # Update the next iteration.
+        q += np.linalg.norm(grad)**2
+        h = (np.sqrt(q) + delta) * np.eye(grad.size)
+        w = w - gamma * np.linalg.solve(h, grad)
+
+        # Compute loss
+        loss = reg_logistic_regression_loss(y, tx, w, lambda_)
+
+        # Display information
+        if info and iter % info_step == 0:
+            print(f'Iter: {iter:05}/{max_iters} - Loss: {loss:.2f}')
+
+    return w, loss

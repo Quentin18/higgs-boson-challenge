@@ -1,7 +1,6 @@
 """
 Score and performance functions.
 """
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -37,31 +36,27 @@ def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     return result
 
 
-def plot_confusion_matrix(conf_matrix: np.ndarray,
-                          cmap: str = 'viridis') -> None:
-    """Plot Confusion Matrix.
+def get_proportions(y: np.ndarray) -> dict:
+    """Gets proportions of the different values as a dictionary.
 
     Args:
-        conf_matrix (np.ndarray): confusion matrix.
-        cmap (str, optional): colormap recognized by matplotlib.
-        Defaults to 'viridis'.
+        y (np.ndarray): vector.
+
+    Returns:
+        dict: proportions of values.
     """
-    fig, ax = plt.subplots(figsize=(5, 5))
+    uniques, counts = np.unique(y, return_counts=True)
+    return dict(zip(uniques, counts / y.size))
 
-    # Plot matrix
-    ax.matshow(conf_matrix, cmap=cmap, alpha=0.3)
 
-    # Add values as text
-    for i in range(conf_matrix.shape[0]):
-        for j in range(conf_matrix.shape[1]):
-            ax.text(x=j, y=i, s=conf_matrix[i, j], va='center', ha='center',
-                    size='xx-large')
+def get_proportion_empty(x: np.ndarray, value: int = -999) -> float:
+    """Gets proportion of empty cell in each features.
 
-    # Set labels
-    ax.set_xlabel('Predicted labels')
-    ax.set_ylabel('True labels')
-    ax.set_title('Confusion Matrix')
+    Args:
+        x (np.ndarray): matrix.
+        value (int, optional): empty value. Defaults to -999.
 
-    # Show plot
-    fig.tight_layout()
-    plt.show()
+    Returns:
+        float: proportion of empty cells.
+    """
+    return np.count_nonzero(x == value, axis=0) / x.shape[0]

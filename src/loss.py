@@ -1,4 +1,6 @@
-"""Loss function."""
+"""
+Loss functions.
+"""
 import numpy as np
 
 from helpers import sigmoid
