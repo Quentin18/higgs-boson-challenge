@@ -69,8 +69,8 @@ def predict_labels(weights: np.ndarray, data: np.ndarray,
         y_pred = np.dot(data, weights)
 
     # Select class label
-    y_pred[np.where(y_pred <= border)] = label_b_out
-    y_pred[np.where(y_pred > border)] = 1
+    y_pred[np.where(y_pred <= border-0.1)] = label_b_out
+    y_pred[np.where(y_pred > border-0.1)] = 1
 
     # Convert result to array of int
     y_pred = y_pred.astype(int)

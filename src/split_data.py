@@ -37,7 +37,7 @@ def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float,
 
 
 def split_by_jet(y: np.ndarray, x: np.ndarray, jet_col_num: int = 22,
-                 max_jet: int = 3, clean: bool = True) -> tuple:
+                 max_jet: int = 3, clean: bool = True, test: bool = False) -> tuple:
     """Splits the dataset by jet.
 
     Args:
@@ -47,24 +47,30 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, jet_col_num: int = 22,
         max_jet (int, optional): maximum number of jet. Defaults to 3.
         clean (bool, optional): True to clean data. Defaults to True.
     Returns:
-        tuple: y_by_jet, x_by_jet
+        tuple: y_by_jet, x_by_jet,ind_by_jet if test=True
     """
     jet_col = x[:, jet_col_num]
-    y_by_jet, x_by_jet = list(), list()
+    y_by_jet, x_by_jet= list(), list()
+    if test:
+        ind_by_jet=list()
     for i in range(max_jet + 1):
         rows_indices = np.where(jet_col == i)   # select rows indices
         rows = np.squeeze(x[rows_indices, :])   # select rows
         rows_without_jet = np.delete(rows, jet_col_num, axis=1)
         x_by_jet.append(rows_without_jet)       # add rows to list
         y_by_jet.append(y[rows_indices])
+        if test:
+            ind_by_jet.append(rows_indices)
 
     if clean:
         clean_data_by_jet(x_by_jet)
+    if test:
+        return y_by_jet, x_by_jet,ind_by_jet
+    else:
+        return y_by_jet, x_by_jet
 
-    return y_by_jet, x_by_jet
 
-
-def split_by_label(y: np.ndarray, x: np.ndarray, label_b: int = -1) -> tuple:
+def split_by_label(y: np.ndarray, x: np.ndarray, label_b: int = -1, plot: bool=False) -> tuple:
     """Split the dataset whith respect to label.
 
     Args:
@@ -77,6 +83,10 @@ def split_by_label(y: np.ndarray, x: np.ndarray, label_b: int = -1) -> tuple:
     """
     ind_label_s = np.where(y == 1)
     ind_label_b = np.where(y == label_b)
-    x_label_s = x[ind_label_s, :]
-    x_label_b = x[ind_label_b, :]
+    if plot:
+        x_label_s = x[ind_label_s]
+        x_label_b = x[ind_label_b]
+    else:
+        x_label_s = x[ind_label_s, :]
+        x_label_b = x[ind_label_b, :]
     return np.squeeze(x_label_s), np.squeeze(x_label_b)

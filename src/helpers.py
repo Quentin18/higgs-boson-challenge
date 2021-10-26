@@ -52,3 +52,21 @@ def sigmoid(t: float) -> float:
         float: sigmoid function evaluated on t.
     """
     return 1 / (1 + np.exp(-t))
+
+def merge_y(y: tuple, indices: tuple) -> np.ndarray:
+    """Merge y for submission.
+
+    Args:
+        y (tuple) : y to merge 
+        indices (tuple) : indices of y to merge
+
+    Returns:
+        np.ndarray: y merge
+    """
+    shape_tot=0
+    for y_split in y:
+        shape_tot+=y_split.shape[0]
+    y_merge=np.zeros(shape=(shape_tot,1))
+    for i,y_split in zip(indices,y):
+        y_merge[i,0]=y_split
+    return y_merge
