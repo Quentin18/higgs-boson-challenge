@@ -1,18 +1,19 @@
 """
 Plot utils using matplotlib.
 """
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from split_data import split_by_label
 
 
-def plot_counts(y: np.ndarray, title: str = None, ax=None,
+def plot_counts(y: np.ndarray, title: str = 'Proportions', ax=None,
                 show: bool = False) -> None:
     """Plots counts of values of a vector as a bar chart.
 
     Args:
         y (np.ndarray): vector.
-        title (str, optional): title of the figure. Defaults to None.
+        title (str, optional): title of the figure. Defaults to 'Proportions'.
         ax (optional): matplotlib ax. Defaults to None.
         show (bool, optional): True to call plt.show. Defaults to True.
     """
@@ -20,25 +21,28 @@ def plot_counts(y: np.ndarray, title: str = None, ax=None,
         _, ax = plt.subplots(figsize=(5, 5))
 
     uniques, counts = np.unique(y, return_counts=True)
-    ax.bar(uniques, counts, tick_label=['s', 'b'])
-    if title is not None:
-        ax.set_title(title)
+    ax.bar(uniques, counts, tick_label=['s', 'b'],
+           color=mcolors.TABLEAU_COLORS)
+    ax.set_title(title)
 
     # Show plot
     if show:
         plt.show()
 
 
-def plot_confusion_matrix(conf_matrix: np.ndarray, cmap: str = 'viridis',
-                          ax=None, show: bool = False) -> None:
+def plot_confusion_matrix(conf_matrix: np.ndarray, cmap: str = 'bwr',
+                          ax=None, show: bool = False,
+                          title: str = 'Confusion matrix') -> None:
     """Plots a confusion matrix.
 
     Args:
         conf_matrix (np.ndarray): confusion matrix.
         cmap (str, optional): colormap recognized by matplotlib.
-        Defaults to 'viridis'.
+        Defaults to 'bwr'.
         ax (optional): matplotlib ax. Defaults to None.
         show (bool, optional): True to call plt.show. Defaults to True.
+        title (bool, optional): title of the confusion matrix.
+        Defaults to 'Confusion Matrix'.
     """
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
@@ -50,16 +54,30 @@ def plot_confusion_matrix(conf_matrix: np.ndarray, cmap: str = 'viridis',
     for i in range(conf_matrix.shape[0]):
         for j in range(conf_matrix.shape[1]):
             ax.text(x=j, y=i, s=conf_matrix[i, j], va='center', ha='center',
-                    size='xx-large')
+                    size='x-large')
 
     # Set labels
     ax.set_xlabel('Predicted labels')
     ax.set_ylabel('True labels')
-    ax.set_title('Confusion Matrix')
+    ax.set_title(title)
 
     # Show plot
     if show:
         plt.show()
+
+
+def plot_accuracies(accuracies: list) -> None:
+    """Plots the accuracies.
+
+    Args:
+        accuracies (list): list of accuracies.
+    """
+    plt.figure(figsize=(6, 3))
+    x = list(range(len(accuracies)))
+    tick_label = [f'Jet = {i}' for i in x]
+    plt.bar(x, accuracies, tick_label=tick_label, color=mcolors.TABLEAU_COLORS)
+    plt.hlines(1, x[0] - 0.5, x[-1] + 0.5, linestyles='dashed')
+    plt.title('Accuracies')
 
 
 def scatter(x1: np.ndarray, x2: np.ndarray, y: np.ndarray, label_b=0,
