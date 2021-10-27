@@ -1,5 +1,5 @@
 import numpy as np
-from implementations import ridge_regression
+import implementations
 from loss import least_squares_loss
 
 def build_k_indices(y, k_fold):
@@ -22,7 +22,7 @@ def cross_validation_lambda(y, x, k_indices, k, lambda_):
     x_tr = x[tr_indice,:]
     # form data with polynomial degree
     # ridge regression
-    w ,loss_tr= ridge_regression(y_tr, x_tr, lambda_)
+    w ,loss_tr= implementations.ridge_regression(y_tr, x_tr, lambda_)
     # calculate the loss for train and test data
     loss_te = least_squares_loss(y_te, x_te, w)
     return loss_tr, loss_te,w
