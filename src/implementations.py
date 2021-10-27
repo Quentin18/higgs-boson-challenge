@@ -2,12 +2,14 @@
 Machine Learning algorithms implementations.
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 from gradient import (least_squares_gradient, logistic_regression_gradient,
                       reg_logistic_regression_gradient)
 from helpers import batch_iter
 from loss import (least_squares_loss, logistic_regression_loss,
                   reg_logistic_regression_loss)
+from cross_validation import build_k_indices,cross_validation_lambda
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
@@ -47,6 +49,33 @@ def ridge_regression(y, tx, lambda_):
     loss = least_squares_loss(y, tx, w)
     return w, loss
 
+def ridge_regression_cross_validation(y: np.ndarray, x: np.ndarray, lambdas: np.ndarray,k_fold: int=4,plot: bool=False):
+    """Ridge regression using normal equations and k-fold cross validation on the lambda parameter."""
+    # split data in k fold
+    k_indices = build_k_indices(y, k_fold)
+    # define lists to store the loss of training data and test data
+    loss_tr = []
+    loss_te = []
+    # cross validation
+    for lambda_ in lambdas:
+        loss_tr_tmp = []
+        loss_te_tmp = []
+        for k in range(k_fold):
+            loss_tr_k, loss_te_k,_ = cross_validation_lambda(y, x, k_indices, k, lambda_)
+            loss_tr_tmp.append(loss_tr_k)
+            loss_te_tmp.append(loss_te_k)
+        loss_tr.append(np.mean(loss_tr_tmp))
+        loss_te.append(np.mean(loss_te_tmp))
+
+    if plot:
+        plt.plot(lambdas,loss_tr,color='blue')
+        plt.plot(lambdas,loss_te,color='red')
+        plt.legend(['training loss','test loss'])
+
+    best_lambda=lambdas[np.argmin(loss_te)]
+    print(best_lambda)
+    w,loss=ridge_regression(y,x,best_lambda)
+    return w,loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma,
                         threshold=1e-8, info=False, info_step=100,

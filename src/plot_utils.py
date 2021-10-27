@@ -78,9 +78,9 @@ def scatter(x1: np.ndarray, x2: np.ndarray,y: np.ndarray,label_b=0
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
 
-    plt.scatter(x1_b,x2_b,color= 'red',alpha=1)
-    plt.scatter(x1_s,x2_s,color='blue',alpha=0.5)
-    
+    plt.scatter(x1_b,x2_b,color= 'red',alpha=1,label="Not boson")
+    plt.scatter(x1_s,x2_s,color='blue',alpha=0.5,label="boson")
+    plt.legend(['Not boson','boson'])
 
     # Decorate
     if title is not None:
@@ -110,7 +110,7 @@ def scatter_all_features(x: np.ndarray ,y: np.ndarray,label_b=0)->None:
     for i in range(0,nb_features-1,2):
         j+=1
         #plt.subplot(3,nb_features//3 + 1,j)
-        scatter(x[:,i],x[:,i+1],y,label_b=0,xlabel="feature {i}",ylabel="feature {j}",title="feature {i} vs feature {j}")
+        scatter(x[:,i],x[:,i+1],y,label_b=0,xlabel="Feature %d" % i,ylabel="Feature %d" % (i+1))
     
 
 
