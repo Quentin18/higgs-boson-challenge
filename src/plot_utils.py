@@ -61,8 +61,10 @@ def plot_confusion_matrix(conf_matrix: np.ndarray, cmap: str = 'viridis',
     if show:
         plt.show()
 
-def scatter(x1: np.ndarray, x2: np.ndarray,y: np.ndarray,label_b=0
-                ,title=None,ylabel=None,xlabel=None, ax=None, show : bool = False) -> None:
+
+def scatter(x1: np.ndarray, x2: np.ndarray, y: np.ndarray, label_b=0,
+            title=None, ylabel=None, xlabel=None, ax=None,
+            show: bool = False) -> None:
     """scatter plot of x1 and x2 with respect to label
 
         Args:
@@ -72,15 +74,15 @@ def scatter(x1: np.ndarray, x2: np.ndarray,y: np.ndarray,label_b=0
         ax (optional): matplotlib ax. Defaults to None.
         show (bool, optional): True to call plt.show. Defaults to True.
     """
-    x1_s, x1_b=split_by_label(y, x1, label_b,plot=True)
-    x2_s, x2_b=split_by_label(y, x2, label_b,plot=True)
+    x1_s, x1_b = split_by_label(y, x1, label_b, plot=True)
+    x2_s, x2_b = split_by_label(y, x2, label_b, plot=True)
 
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
 
-    plt.scatter(x1_b,x2_b,color= 'red',alpha=1,label="Not boson")
-    plt.scatter(x1_s,x2_s,color='blue',alpha=0.5,label="boson")
-    plt.legend(['Not boson','boson'])
+    plt.scatter(x1_b, x2_b, color='red', alpha=1, label="Not boson")
+    plt.scatter(x1_s, x2_s, color='blue', alpha=0.5, label="boson")
+    plt.legend(['Not boson', 'boson'])
 
     # Decorate
     if title is not None:
@@ -91,28 +93,22 @@ def scatter(x1: np.ndarray, x2: np.ndarray,y: np.ndarray,label_b=0
         plt.ylabel(ylabel)
 
     if show:
-        plt.show() 
+        plt.show()
 
-def scatter_all_features(x: np.ndarray ,y: np.ndarray,label_b=0)->None:
+
+def scatter_all_features(x: np.ndarray, y: np.ndarray, label_b=0) -> None:
     """Plot all features in a scatter plot
 
         Args:
         x (np.ndarray)
         y (np.ndarray)
     """
-    nb_features=x.shape[1]
+    nb_features = x.shape[1]
     if nb_features % 2 == 1:
-        nb_features+=1
-        x=np.c_[x,x[:,-2]]
-    nb_plot=nb_features/2
-    #fig, axs = plt.subplots(ncols=3,nrows=nb_features//3 + 1 ,figsize=(25, 60))
-    j=0
-    for i in range(0,nb_features-1,2):
-        j+=1
-        #plt.subplot(3,nb_features//3 + 1,j)
-        scatter(x[:,i],x[:,i+1],y,label_b=0,xlabel="Feature %d" % i,ylabel="Feature %d" % (i+1))
-    
-
-
-
-
+        nb_features += 1
+        x = np.c_[x, x[:, -2]]
+    j = 0
+    for i in range(0, nb_features-1, 2):
+        j += 1
+        scatter(x[:, i], x[:, i+1], y, label_b=0, xlabel="Feature %d" % i,
+                ylabel="Feature %d" % (i+1))
