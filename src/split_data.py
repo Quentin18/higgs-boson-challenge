@@ -6,14 +6,14 @@ import numpy as np
 from clean_data import clean_data_by_jet
 
 
-def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float,
+def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
                      seed: int = 1) -> tuple:
     """Splits the data into random train and test subsets.
 
     Args:
         x (np.ndarray): input data.
         y (np.ndarray): output desired values.
-        ratio (float): split ratio.
+        ratio (float, optional): split ratio. Defaults to 0.8.
         seed (int, optional): seed for random generator. Defaults to 1.
 
     Returns:

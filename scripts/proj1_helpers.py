@@ -1,16 +1,9 @@
 """
-Some helper functions for project 1.
+Some helper functions to load data and create submission..
 """
 import csv
 
 import numpy as np
-
-from path import add_src_to_path
-
-# Add src to path to import implementations
-add_src_to_path()
-
-from helpers import sigmoid
 
 
 def load_csv_data(data_path: str, sub_sample: bool = False,
@@ -42,40 +35,6 @@ def load_csv_data(data_path: str, sub_sample: bool = False,
         ids = ids[::50]
 
     return yb, input_data, ids
-
-
-def predict_labels(weights: np.ndarray, data: np.ndarray,
-                   label_b_in: int = -1, label_b_out: int = -1,
-                   use_sigmoid: bool = False) -> np.ndarray:
-    """Generates class predictions given weights, and a test data matrix.
-
-    Args:
-        weights (np.ndarray): vector of weights.
-        data (np.ndarray): matrix of test data.
-        label_b_in (int, optional): label of "b" event in input data
-        (-1 or 0). Defaults to -1.
-        label_b_out (int, optional): label of "b" event out input data
-        (-1 or 0). Defaults to -1.
-        use_sigmoid (bool, optional): True to use the sigmoid function to
-        predict labels. Defaults to False.
-
-    Returns:
-        np.ndarray: class predictions.
-    """
-    border = (label_b_in + 1) / 2
-    if use_sigmoid:
-        y_pred = sigmoid(np.dot(data, weights))
-    else:
-        y_pred = np.dot(data, weights)
-
-    # Select class label
-    y_pred[np.where(y_pred <= border-0.1)] = label_b_out
-    y_pred[np.where(y_pred > border-0.1)] = 1
-
-    # Convert result to array of int
-    y_pred = y_pred.astype(int)
-
-    return y_pred
 
 
 def create_csv_submission(ids: np.ndarray, y_pred: np.ndarray, name: str):
