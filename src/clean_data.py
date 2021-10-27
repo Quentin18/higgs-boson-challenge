@@ -145,3 +145,19 @@ def under_sample(y: np.ndarray, x: np.ndarray) -> tuple:
     indices_to_remove = indices[:nb_to_remove]
     return (np.delete(y, indices_to_remove),
             np.delete(x, indices_to_remove, axis=0))
+
+
+def remove_outliers(y: np.ndarray, x: np.ndarray, k: int) -> tuple:
+    """Removes the outliers from x and y.
+
+    Args:
+        y (np.ndarray): output desired values.
+        x (np.ndarray): input data.
+        k (int): threashold.
+
+    Returns:
+        tuple: x and y without outliers.
+    """
+    mu, sigma = np.mean(x, axis=0), np.std(x, axis=0, ddof=1)
+    indices = np.all(np.abs((x - mu) / sigma) < k, axis=1)
+    return y[indices], x[indices]
