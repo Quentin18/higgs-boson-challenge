@@ -4,6 +4,8 @@ Plot utils using matplotlib.
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+
+from print_utils import SUBSET_LABELS
 from split_data import split_by_label
 
 
@@ -21,7 +23,7 @@ def plot_counts(y: np.ndarray, title: str = 'Proportions', ax=None,
         _, ax = plt.subplots(figsize=(5, 5))
 
     uniques, counts = np.unique(y, return_counts=True)
-    ax.bar(uniques, counts, tick_label=['s', 'b'],
+    ax.bar(uniques, counts, tick_label=('s', 'b'),
            color=mcolors.TABLEAU_COLORS)
     ax.set_title(title)
 
@@ -66,18 +68,32 @@ def plot_confusion_matrix(conf_matrix: np.ndarray, cmap: str = 'bwr',
         plt.show()
 
 
-def plot_accuracies(accuracies: list) -> None:
+def plot_accuracies(accuracies: list, title: str = 'Accuracies') -> None:
     """Plots the accuracies.
 
     Args:
         accuracies (list): list of accuracies.
+        title (bool, optional): title of the accuracies plot.
+        Defaults to 'Accuracies'.
     """
-    plt.figure(figsize=(6, 3))
-    x = list(range(len(accuracies)))
-    tick_label = [f'Jet = {i}' for i in x]
+    # Get tick labels
+    length = len(accuracies)
+    if length > 3:
+        tick_label = SUBSET_LABELS + ('Global',)
+    else:
+        tick_label = SUBSET_LABELS
+
+    # Plot bars
+    plt.figure(figsize=(6, 4))
+    x = list(range(length))
     plt.bar(x, accuracies, tick_label=tick_label, color=mcolors.TABLEAU_COLORS)
-    plt.hlines(1, x[0] - 0.5, x[-1] + 0.5, linestyles='dashed')
-    plt.title('Accuracies')
+
+    # Add values as text
+    for index, value in enumerate(accuracies):
+        plt.text(index - 0.15, value + 1e-2, str(round(value, 3)))
+
+    plt.ylim(top=1)
+    plt.title(title)
 
 
 def scatter(x1: np.ndarray, x2: np.ndarray, y: np.ndarray, label_b=0,

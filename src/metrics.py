@@ -32,7 +32,7 @@ def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     k = len(np.unique(y_true))  # Number of classes
     result = np.zeros((k, k), dtype=int)
     for i, j in zip(y_true, y_pred):
-        result[i, j] += 1
+        result[int(i == 1), int(j == 1)] += 1
     return result
 
 
@@ -50,7 +50,7 @@ def get_proportions(y: np.ndarray) -> dict:
 
 
 def get_proportion_empty(x: np.ndarray, value: int = -999) -> float:
-    """Gets proportion of empty cell in each features.
+    """Gets proportion of empty cells in each features.
 
     Args:
         x (np.ndarray): matrix.

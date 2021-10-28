@@ -6,16 +6,33 @@ import numpy as np
 from stats_tests import anova_test
 
 
-def standardize(x: np.ndarray) -> np.ndarray:
-    """Outputs the matrix x after normalization.
+def get_mean_std(x: np.ndarray) -> tuple:
+    """Returns the mean and std of a matrix by rows.
 
     Args:
         x (np.ndarray): matrix.
 
     Returns:
-        np.ndarray: matrix x normalized.
+        tuple: mean, std
     """
-    return (x - np.mean(x, axis=0)) / np.std(x, axis=0)
+    return np.mean(x, axis=0), np.std(x, axis=0)
+
+
+def standardize(x: np.ndarray, mean: np.ndarray = None,
+                std: np.ndarray = None) -> np.ndarray:
+    """Outputs the matrix x after normalization.
+
+    Args:
+        x (np.ndarray): matrix.
+        mean (np.ndarray, optional): mean. Defaults to None.
+        std (np.ndarray, optional): std. Defaults to None.
+
+    Returns:
+        np.ndarray: x after normalization.
+    """
+    if mean is None and std is None:
+        mean, std = get_mean_std(x)
+    return (x - mean) / std
 
 
 def drop_columns(x: np.ndarray, indices: list) -> np.ndarray:
@@ -98,12 +115,13 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
     Returns:
         list: columns indices to remove by jet.
     """
-    columns_to_remove = []
-    for x, y in zip(x_by_jet, y_by_jet):
-        c1 = get_columns_all_same(x)
-        c2 = get_columns_useless_anova(y, x[:, ~c1], k)
-        columns_to_remove.append(np.concatenate((c1, c2)))
-    return columns_to_remove
+    # columns_to_remove = []
+    # for x, y in zip(x_by_jet, y_by_jet):
+    #     c1 = get_columns_all_same(x)
+    #     c2 = get_columns_useless_anova(y, x[:, ~c1], k)
+    #     columns_to_remove.append(np.concatenate((c1, c2)))
+    # return columns_to_remove
+    return [get_columns_all_same(x) for x in x_by_jet]
 
 
 def clean_data_by_jet(y_by_jet: list, x_by_jet: list,

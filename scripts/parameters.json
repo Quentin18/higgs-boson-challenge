@@ -1,0 +1,10 @@
+{
+    "ridge_regression": {
+        "lambda_": 0.001,
+        "degree": [
+            9,
+            12,
+            12
+        ]
+    }
+}

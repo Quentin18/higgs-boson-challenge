@@ -72,15 +72,16 @@ def predict_labels(weights: np.ndarray, data: np.ndarray,
     Returns:
         np.ndarray: class predictions.
     """
-    border = (label_b_in + 1) / 2
     if use_sigmoid:
         y_pred = sigmoid(np.dot(data, weights))
+        threshold = 1 / 2
     else:
         y_pred = np.dot(data, weights)
+        threshold = 0
 
     # Select class label
-    y_pred[np.where(y_pred <= border)] = label_b_out
-    y_pred[np.where(y_pred > border)] = 1
+    y_pred[np.where(y_pred <= threshold)] = label_b_out
+    y_pred[np.where(y_pred > threshold)] = 1
 
     # Convert result to array of int
     y_pred = y_pred.astype(int)
