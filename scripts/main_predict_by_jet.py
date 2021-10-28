@@ -14,11 +14,13 @@ from proj1_helpers import create_csv_submission, load_csv_data
 add_src_to_path()
 
 # Import functions from src/
+from clean_data import clean_data_by_jet
 from implementations import (least_squares, logistic_regression,
                              reg_logistic_regression)
 from split_data import split_by_jet
 from helpers import predict_labels
 from metrics import get_proportions
+from print_utils import print_shapes, print_shapes_by_jet
 
 # Classifier to use
 # CLASSIFIER = 'least_squares'
@@ -42,19 +44,25 @@ def main():
     # Load the train data
     print('[1/7] Load train data')
     y, x, ids = load_csv_data(DATA_TRAIN_PATH, label_b=0)
+    print_shapes(y, x)
 
     # Load the test data
     print('[2/7] Load test data')
     y_test, x_test, ids_test = load_csv_data(DATA_TEST_PATH, label_b=0)
+    print_shapes(y_test, x_test)
 
     # Split and clean train data
     print('[3/7] Split and clean train data')
     y_by_jet, x_by_jet, _ = split_by_jet(y, x, ids)
+    cols_to_remove_by_jet = clean_data_by_jet(y_by_jet, x_by_jet)
+    print_shapes_by_jet(y_by_jet, x_by_jet)
 
     # Split and clean test data
     print('[4/7] Split and clean test data')
     y_test_by_jet, x_test_by_jet, ids_test_by_jet = split_by_jet(
         y_test, x_test, ids_test)
+    clean_data_by_jet(y_test_by_jet, x_test_by_jet, cols_to_remove_by_jet)
+    print_shapes_by_jet(y_test_by_jet, x_test_by_jet)
 
     print('[5/7] Run classification algorithm')
 

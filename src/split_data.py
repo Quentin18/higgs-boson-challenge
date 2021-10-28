@@ -3,8 +3,6 @@ Split functions to handle data.
 """
 import numpy as np
 
-import clean_data
-
 
 def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
                      seed: int = 1) -> tuple:
@@ -37,8 +35,7 @@ def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
 
 
 def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray = None,
-                 jet_col_num: int = 22, max_jet: int = 3,
-                 clean: bool = True, k: float = 1e-3) -> tuple:
+                 jet_col_num: int = 22, max_jet: int = 3) -> tuple:
     """Splits the dataset by jet.
 
     Args:
@@ -47,10 +44,6 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray = None,
         ids (np.ndarray, optional): ids of rows. Defaults to None.
         jet_col_num (int, optional): index of jet column. Defaults to 22.
         max_jet (int, optional): maximum number of jet. Defaults to 3.
-        clean (bool, optional): True to clean data. Defaults to True.
-        test (bool, optional): True to get index before split to rebuild
-        for submission. Defaults to False
-        k: (float, optional): critical values for anova test. Defaults to 1e-3
     Returns:
         tuple: y_by_jet, x_by_jet, ids_by_jet.
     """
@@ -65,12 +58,7 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray = None,
         if ids is not None:
             ids_by_jet.append(ids[rows_indices])
 
-    if clean:
-        columns_to_remove_by_jet = clean_data.clean_data_by_jet(y_by_jet,
-                                                                x_by_jet, k=k)
-        return y_by_jet, x_by_jet, ids_by_jet, columns_to_remove_by_jet
     return y_by_jet, x_by_jet, ids_by_jet
-
 
 
 def split_by_label(y: np.ndarray, x: np.ndarray, label_b: int = -1,

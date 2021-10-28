@@ -62,42 +62,71 @@ def get_columns_all_same(x: np.ndarray) -> np.ndarray:
     return np.array(indices).astype(int)
 
 
+def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
+                              k: float = 1e-3) -> np.ndarray:
+    """Returns the columns indices of x useless according to Anova.
+
+    Args:
+        y (np.ndarray): input data labels.
+        x (np.ndarray): input data.
+        k (float, optional): critique value for feature selection with
+        anova test. Defaults to 1e-3.
+
+    Returns:
+        np.ndarray: columns indices.
+    """
+    features, f = anova_test(y, x, label_b=0)
+    ind_to_remove = np.where(f < k)
+    features_to_remove = features[ind_to_remove]
+    return features_to_remove.astype(int)
+
+
 def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
                                  k: float = 1e-3) -> list:
     """Returns the columns indices to remove by jet.
 
-    A column needs to be removed if all its values are the same.
+    A column needs to be removed if:
+    - All its values are the same.
+    - The feature is useless according to Anova.
 
     Args:
-        x_by_jet (list): x matrices by jet.
         y_by_jet (list): y labels by jet.
-        k (float): critique value for anova filter
+        x_by_jet (list): x matrices by jet.
+        k (float): critical value for anova filter. Defaults to 1e-3.
+
     Returns:
         list: columns indices to remove by jet.
     """
     columns_to_remove = []
     for x, y in zip(x_by_jet, y_by_jet):
         c1 = get_columns_all_same(x)
-        c2 = filter_features_anova(y, x, k=k)
-        print(c2)
-        columns_to_remove.append(np.unique((np.concatenate((c1, c2)))))
+        c2 = get_columns_useless_anova(y, x[:, ~c1], k)
+        columns_to_remove.append(np.concatenate((c1, c2)))
     return columns_to_remove
 
 
-def clean_data_by_jet(y_by_jet: list, x_by_jet: list, std: bool = True,
-                      k: float = 1e-3) -> tuple:
+def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
+                      cols_to_remove_by_jet: list = None, std: bool = True,
+                      k: float = 1e-3) -> list:
     """Cleans the dataset by jet.
 
-    It removes columns with same data and useless with the anova test.
+    It removes columns with same data and useless features with the anova test.
     Standardize the other columns.
 
     Args:
+        y_by_jet (list): y labels by jet.
         x_by_jet (list): x matrices by jet.
+        cols_to_remove_by_jet (list, optional): list of columns to remove by
+        jet. Defaults to None.
         std (bool, optional): True to standardize data. Defaults to True.
-        k (float, optional): critical values for anova test.
+        k: (float, optional): critical values for anova test. Defaults to 1e-3.
+
+    Returns:
+        list: columns to remove by jet.
     """
-    cols_to_remove_by_jet = get_columns_to_remove_by_jet(y_by_jet, x_by_jet,
-                                                         k=k)
+    if cols_to_remove_by_jet is None:
+        cols_to_remove_by_jet = get_columns_to_remove_by_jet(
+            y_by_jet, x_by_jet, k=k)
     for i in range(len(x_by_jet)):
         # Remove columns if needed
         if cols_to_remove_by_jet[i].size:
@@ -175,22 +204,3 @@ def remove_outliers(y: np.ndarray, x: np.ndarray, k: int) -> tuple:
     mu, sigma = np.mean(x, axis=0), np.std(x, axis=0, ddof=1)
     indices = np.all(np.abs((x - mu) / sigma) < k, axis=1)
     return y[indices], x[indices]
-
-
-def filter_features_anova(y: np.ndarray, x: np.ndarray,
-                          k: float = 1e-3) -> np.ndarray:
-    """[summary]
-
-    Args:
-        y (np.ndarray): input data labels
-        x (np.ndarray): input data
-        k (float, optional): critique value for feature selection with
-            anova test. Defaults to 1e-3.
-
-    Returns:
-        np.ndarray: x after anova
-    """
-    features, f = anova_test(y, x, label_b=0)
-    ind_to_remove = np.where(f < k)
-    features_to_remove = features[ind_to_remove]
-    return features_to_remove.astype(int)
