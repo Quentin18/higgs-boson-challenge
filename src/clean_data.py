@@ -2,6 +2,7 @@
 Functions to clean data.
 """
 import numpy as np
+
 from stats_tests import anova_test
 
 
