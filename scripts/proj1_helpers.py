@@ -6,11 +6,9 @@ import csv
 import numpy as np
 
 from path import add_src_to_path
-
+from helpers import sigmoid
 # Add src to path to import implementations
 add_src_to_path()
-
-from helpers import sigmoid
 
 
 def load_csv_data(data_path: str, sub_sample: bool = False,
