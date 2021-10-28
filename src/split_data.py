@@ -36,7 +36,7 @@ def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
     return x_train, x_test, y_train, y_test
 
 
-def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray,
+def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray = None,
                  jet_col_num: int = 22, max_jet: int = 3,
                  clean: bool = True) -> tuple:
     """Splits the dataset by jet.
@@ -44,7 +44,7 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray,
     Args:
         y (np.ndarray): output desired values.
         x (np.ndarray): input data.
-        ids (np.ndarray): ids of rows.
+        ids (np.ndarray, optional): ids of rows. Defaults to None.
         jet_col_num (int, optional): index of jet column. Defaults to 22.
         max_jet (int, optional): maximum number of jet. Defaults to 3.
         clean (bool, optional): True to clean data. Defaults to True.
@@ -59,7 +59,8 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray,
         rows_without_jet = np.delete(rows, jet_col_num, axis=1)
         x_by_jet.append(rows_without_jet)       # add rows to list
         y_by_jet.append(y[rows_indices])
-        ids_by_jet.append(ids[rows_indices])
+        if ids is not None:
+            ids_by_jet.append(ids[rows_indices])
 
     if clean:
         clean_data_by_jet(x_by_jet)
