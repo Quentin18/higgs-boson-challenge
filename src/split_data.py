@@ -6,14 +6,14 @@ import numpy as np
 import clean_data
 
 
-def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float,
+def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
                      seed: int = 1) -> tuple:
     """Splits the data into random train and test subsets.
 
     Args:
         x (np.ndarray): input data.
         y (np.ndarray): output desired values.
-        ratio (float): split ratio.
+        ratio (float, optional): split ratio. Defaults to 0.8.
         seed (int, optional): seed for random generator. Defaults to 1.
 
     Returns:
@@ -36,14 +36,15 @@ def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float,
     return x_train, x_test, y_train, y_test
 
 
-def split_by_jet(y: np.ndarray, x: np.ndarray, jet_col_num: int = 22,
-                 max_jet: int = 3, clean: bool = True, test: bool = False,
-                 k: float = 1e-3) -> tuple:
+def split_by_jet(y: np.ndarray, x: np.ndarray, ids: np.ndarray = None,
+                 jet_col_num: int = 22, max_jet: int = 3,
+                 clean: bool = True, k: float = 1e-3) -> tuple:
     """Splits the dataset by jet.
 
     Args:
         y (np.ndarray): output desired values.
         x (np.ndarray): input data.
+        ids (np.ndarray, optional): ids of rows. Defaults to None.
         jet_col_num (int, optional): index of jet column. Defaults to 22.
         max_jet (int, optional): maximum number of jet. Defaults to 3.
         clean (bool, optional): True to clean data. Defaults to True.
@@ -51,29 +52,25 @@ def split_by_jet(y: np.ndarray, x: np.ndarray, jet_col_num: int = 22,
         for submission. Defaults to False
         k: (float, optional): critical values for anova test. Defaults to 1e-3
     Returns:
-        tuple: y_by_jet, x_by_jet,ind_by_jet if test=True
+        tuple: y_by_jet, x_by_jet, ids_by_jet.
     """
     jet_col = x[:, jet_col_num]
-    y_by_jet, x_by_jet = list(), list()
-    if test:
-        ind_by_jet = list()
+    y_by_jet, x_by_jet, ids_by_jet = list(), list(), list()
     for i in range(max_jet + 1):
         rows_indices = np.where(jet_col == i)   # select rows indices
         rows = np.squeeze(x[rows_indices, :])   # select rows
         rows_without_jet = np.delete(rows, jet_col_num, axis=1)
         x_by_jet.append(rows_without_jet)       # add rows to list
         y_by_jet.append(y[rows_indices])
-        if test:
-            ind_by_jet.append(rows_indices)
+        if ids is not None:
+            ids_by_jet.append(ids[rows_indices])
 
     if clean:
         columns_to_remove_by_jet = clean_data.clean_data_by_jet(y_by_jet,
                                                                 x_by_jet, k=k)
-        return y_by_jet, x_by_jet, columns_to_remove_by_jet
-    if test:
-        return y_by_jet, x_by_jet, ind_by_jet
-    else:
-        return y_by_jet, x_by_jet
+        return y_by_jet, x_by_jet, ids_by_jet, columns_to_remove_by_jet
+    return y_by_jet, x_by_jet, ids_by_jet
+
 
 
 def split_by_label(y: np.ndarray, x: np.ndarray, label_b: int = -1,
