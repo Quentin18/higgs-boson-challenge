@@ -150,27 +150,29 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
         # Remove columns if needed
         if cols_to_remove_by_jet[i].size:
             x_by_jet[i] = drop_columns(x_by_jet[i], cols_to_remove_by_jet[i])
+        # Replace empty with mean
+        x_by_jet[i] = replace_empty_with_median(x_by_jet[i])
         # Standardize data
         if std:
             x_by_jet[i] = standardize(x_by_jet[i])
     return cols_to_remove_by_jet
 
 
-def replace_empty_with_mean(x: np.ndarray, value: int = -999) -> np.ndarray:
-    """Replaces empty cells with mean of true values.
+def replace_empty_with_median(x: np.ndarray, value: int = -999) -> np.ndarray:
+    """Replaces empty cells with median of true values.
 
     Args:
         x (np.ndarray): matrix.
         value (int, optional): empty value. Defaults to -999.
 
     Returns:
-        np.ndarray: x with empty values replaced by mean.
+        np.ndarray: x with empty values replaced by median.
     """
     for i in range(x.shape[1]):
         ind_full_cell = np.where(x[:, i] != value)
-        mean_feature = np.mean(x[ind_full_cell, i])
+        median_feature = np.median(x[ind_full_cell, i])
         ind_empty_cell = np.where(x[:, i] == value)
-        x[ind_empty_cell, i] = mean_feature
+        x[ind_empty_cell, i] = median_feature
     return x
 
 

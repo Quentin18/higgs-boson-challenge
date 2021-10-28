@@ -15,7 +15,8 @@ from proj1_helpers import load_csv_data
 add_src_to_path()
 
 # Import functions from scripts/
-from clean_data import clean_data_by_jet
+from clean_data import clean_data_by_jet, get_mean_std, standardize
+from cross_validation import build_poly
 from helpers import predict_labels
 from implementations import (least_squares, logistic_regression,
                              reg_logistic_regression)
@@ -54,7 +55,8 @@ def main():
     y_tr_by_jet, x_tr_by_jet, _ = split_by_jet(y_tr, x_tr)
 
     # Clean train data by jet
-    cols_to_remove_by_jet = clean_data_by_jet(y_tr_by_jet, x_tr_by_jet, k=0)
+    cols_to_remove_by_jet = clean_data_by_jet(y_tr_by_jet, x_tr_by_jet, k=0, std=False)
+
     print_shapes_by_jet(y_tr_by_jet, x_tr_by_jet)
 
     print('[4/7] Split and clean test data by jet')
@@ -62,8 +64,14 @@ def main():
     y_te_by_jet, x_te_by_jet, _ = split_by_jet(y_te, x_te)
 
     # Clean test data by jet
-    clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet)
+    clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet, std=False)
     print_shapes_by_jet(y_te_by_jet, x_te_by_jet)
+
+    # Standardize
+    for i in range(len(x_tr_by_jet)):
+        mean, std = get_mean_std(x_tr_by_jet[i])
+        x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
+        x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
 
     print('[5/7] Run classification algorithm')
 
@@ -89,7 +97,7 @@ def main():
             w_by_jet.append(w)
 
     elif CLASSIFIER == 'reg_logistic_regression':
-        lambda_ = 1e-3
+        lambda_ = 1e-2
         max_iters = 5000
         gamma = 1e-5
         threshold = 1e-8
