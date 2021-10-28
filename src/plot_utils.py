@@ -80,9 +80,9 @@ def scatter(x1: np.ndarray, x2: np.ndarray, y: np.ndarray, label_b=0,
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
 
-    plt.scatter(x1_b, x2_b, color='red', alpha=1, label="Not boson")
-    plt.scatter(x1_s, x2_s, color='blue', alpha=0.5, label="boson")
-    plt.legend(['Not boson', 'boson'])
+    plt.scatter(x1_b, x2_b, color='red', alpha=1, label="Not boson", s=1)
+    plt.scatter(x1_s, x2_s, color='blue', alpha=0.3, label="boson", s=1)
+    plt.legend()
 
     # Decorate
     if title is not None:
