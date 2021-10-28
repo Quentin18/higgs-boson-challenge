@@ -2,6 +2,7 @@
 Functions to clean data.
 """
 import numpy as np
+from stats_tests import anova_test
 
 
 def standardize(x: np.ndarray) -> np.ndarray:
@@ -58,40 +59,53 @@ def get_columns_all_same(x: np.ndarray) -> np.ndarray:
         unique = np.unique(x[:, col])
         if unique.size == 1:
             indices.append(col)
-    return np.array(indices)
+    return np.array(indices).astype(int)
 
 
-def get_columns_to_remove_by_jet(x_by_jet: list) -> list:
+def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
+                                 k: float = 1e-3) -> list:
     """Returns the columns indices to remove by jet.
 
     A column needs to be removed if all its values are the same.
 
     Args:
         x_by_jet (list): x matrices by jet.
-
+        y_by_jet (list): y labels by jet.
+        k (float): critique value for anova filter
     Returns:
         list: columns indices to remove by jet.
     """
-    return [get_columns_all_same(x) for x in x_by_jet]
+    columns_to_remove = []
+    for x, y in zip(x_by_jet, y_by_jet):
+        c1 = get_columns_all_same(x)
+        c2 = filter_features_anova(y, x, k=k)
+        print(c2)
+        columns_to_remove.append(np.unique((np.concatenate((c1, c2)))))
+    return columns_to_remove
 
 
-def clean_data_by_jet(x_by_jet: list, std: bool = True) -> None:
+def clean_data_by_jet(y_by_jet: list, x_by_jet: list, std: bool = True,
+                      k: float = 1e-3) -> tuple:
     """Cleans the dataset by jet.
 
-    It removes columns with same data and standardize the other columns.
+    It removes columns with same data and useless with the anova test.
+    Standardize the other columns.
 
     Args:
         x_by_jet (list): x matrices by jet.
         std (bool, optional): True to standardize data. Defaults to True.
+        k (float, optional): critical values for anova test.
     """
-    cols_to_remove_by_jet = get_columns_to_remove_by_jet(x_by_jet)
+    cols_to_remove_by_jet = get_columns_to_remove_by_jet(y_by_jet, x_by_jet,
+                                                         k=k)
     for i in range(len(x_by_jet)):
         # Remove columns if needed
-        if cols_to_remove_by_jet[i].size > 0:
+        if cols_to_remove_by_jet[i].size:
             x_by_jet[i] = drop_columns(x_by_jet[i], cols_to_remove_by_jet[i])
         # Standardize data
         if std:
             x_by_jet[i] = standardize(x_by_jet[i])
+    return cols_to_remove_by_jet
 
 
 def replace_empty_with_mean(x: np.ndarray, value: int = -999) -> np.ndarray:
@@ -161,3 +175,22 @@ def remove_outliers(y: np.ndarray, x: np.ndarray, k: int) -> tuple:
     mu, sigma = np.mean(x, axis=0), np.std(x, axis=0, ddof=1)
     indices = np.all(np.abs((x - mu) / sigma) < k, axis=1)
     return y[indices], x[indices]
+
+
+def filter_features_anova(y: np.ndarray, x: np.ndarray,
+                          k: float = 1e-3) -> np.ndarray:
+    """[summary]
+
+    Args:
+        y (np.ndarray): input data labels
+        x (np.ndarray): input data
+        k (float, optional): critique value for feature selection with
+            anova test. Defaults to 1e-3.
+
+    Returns:
+        np.ndarray: x after anova
+    """
+    features, f = anova_test(y, x, label_b=0)
+    ind_to_remove = np.where(f < k)
+    features_to_remove = features[ind_to_remove]
+    return features_to_remove.astype(int)
