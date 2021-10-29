@@ -61,6 +61,15 @@ def print_loss(loss: float) -> None:
     print(f'Loss: {loss:.3f}')
 
 
+def print_start(name: str) -> None:
+    """Prints start of a procedure.
+
+    Args:
+        name (str): name of the procedure.
+    """
+    print('[Start]', name)
+
+
 def print_progress(iter: int, max_iters: int, loss: float) -> None:
     """Prints progress of gradient functions.
 
@@ -70,3 +79,13 @@ def print_progress(iter: int, max_iters: int, loss: float) -> None:
         loss (float): loss of the current iteration.
     """
     print(f'Iter: {iter:05}/{max_iters} - Loss: {loss:.2f}')
+
+
+def print_end(name: str, duration: float) -> None:
+    """Prints end of a procedure.
+
+    Args:
+        name (str): name of the procedure.
+        duration (float): duration of the procedure.
+    """
+    print(f'[End] {name} (time: {duration:.2f} s.)')
