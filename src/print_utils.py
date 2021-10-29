@@ -50,3 +50,23 @@ def print_subset_label(i: int) -> None:
         i (int): index (0, 1 or 2).
     """
     print(get_subset_label(i) + ':')
+
+
+def print_loss(loss: float) -> None:
+    """Prints loss.
+
+    Args:
+        loss (float): loss.
+    """
+    print(f'Loss: {loss:.3f}')
+
+
+def print_progress(iter: int, max_iters: int, loss: float) -> None:
+    """Prints progress of gradient functions.
+
+    Args:
+        iter (int): current iteration.
+        max_iters (int): maximum iteration.
+        loss (float): loss of the current iteration.
+    """
+    print(f'Iter: {iter:05}/{max_iters} - Loss: {loss:.2f}')
