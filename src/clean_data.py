@@ -115,7 +115,9 @@ def get_columns_all_same(x: np.ndarray) -> np.ndarray:
 
 
 def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
-                              k: float = 1e-3, label_b: int = 0) -> np.ndarray:
+                              ind_col_anova: list = None,
+                              k_anova: float = 1e-3,
+                              label_b: int = -1) -> np.ndarray:
     """Returns the columns indices of x useless according to Anova.
 
     Args:
@@ -124,12 +126,14 @@ def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
         k (float, optional): critique value for feature selection with
         anova test. Defaults to 1e-3.
         label_b (int, optional): label of "b" events. Defaults to 0.
+        ind_col_anova (list): index of the columns of x
 
     Returns:
         np.ndarray: columns indices.
     """
-    features, f = anova_test(y, x, label_b)
-    ind_to_remove = np.where(f < k)
+    features, f = anova_test(y, x, label_b=label_b,
+                             ind_col_anova=ind_col_anova)
+    ind_to_remove = np.where(f < k_anova)
     features_to_remove = features[ind_to_remove]
     return features_to_remove.astype(int)
 
@@ -169,7 +173,8 @@ def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
 
 
 def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
-                                 k_anova: float = None) -> list:
+                                 k_anova: float = None,
+                                 label_b: int = -1) -> list:
     """Returns the columns indices to remove by jet.
 
     A column needs to be removed if:
@@ -180,6 +185,7 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
         y_by_jet (list): y labels by jet.
         x_by_jet (list): x matrices by jet.
         k_anova (float): critical value for anova filter. Defaults to None.
+        label_b (int): label for anova test -1 or 0
 
     Returns:
         list: columns indices to remove by jet.
@@ -188,7 +194,12 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
     for x, y in zip(x_by_jet, y_by_jet):
         cols = get_columns_all_same(x)
         if k_anova is not None:
-            cols_anova = get_columns_useless_anova(y, x[:, ~cols], k_anova)
+            col_anova = list(set(range(0, 30))-set(cols))
+            x_anova = np.delete(x, cols, axis=1)
+            cols_anova = get_columns_useless_anova(y, x_anova,
+                                                   ind_col_anova=col_anova,
+                                                   k_anova=k_anova,
+                                                   label_b=label_b)
             cols = np.concatenate((cols, cols_anova))
         columns_to_remove.append(cols)
     return columns_to_remove
@@ -197,7 +208,7 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
 def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
                       cols_to_remove_by_jet: list = None,
                       replace_empty: bool = True, std: bool = True,
-                      k_anova: float = None) -> list:
+                      k_anova: float = None, label_b: int = -1) -> list:
     """Cleans the dataset by jet.
 
     - Removes columns with same data.
@@ -214,6 +225,7 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
         Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
         k_anova: (float, optional): critical values for Anova test.
+        label_b: (int, optional): for anova test -1 or 1
         Defaults to None.
 
     Returns:
@@ -222,8 +234,7 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
     # Get columns to remove
     if cols_to_remove_by_jet is None:
         cols_to_remove_by_jet = get_columns_to_remove_by_jet(
-            y_by_jet, x_by_jet, k_anova)
-
+            y_by_jet, x_by_jet, k_anova=k_anova, label_b=label_b)
     # Clean data
     for i in range(len(x_by_jet)):
         x_by_jet[i] = clean_data(
