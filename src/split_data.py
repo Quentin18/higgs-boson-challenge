@@ -15,8 +15,8 @@ def split_train_test(y: np.ndarray, x: np.ndarray, ratio: float = 0.8,
     """Splits the data into random train and test subsets.
 
     Args:
-        x (np.ndarray): input data.
         y (np.ndarray): output desired values.
+        x (np.ndarray): input data.
         ratio (float, optional): split ratio. Defaults to 0.8.
         seed (int, optional): seed for random generator. Defaults to 1.
 
