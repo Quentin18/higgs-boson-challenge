@@ -169,3 +169,90 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
         plt.legend()
 
     return best_param
+
+
+def get_best_lambda_degree(y: np.ndarray, x: np.ndarray, optimizer: Callable,
+                           lambdas: list, degrees: list, k_fold: int = 4,
+                           verbose: int = 1, plot: bool = False,
+                           title: str = 'Cross validation results',
+                           **kwargs) -> list:
+    """Returns the best tuple (lambda, degree) determined by cross validation.
+
+    Args:
+        y (np.ndarray): output desired values.
+        x (np.ndarray): input data.
+        optimizer (Callable): function of "implementations" to use.
+        lambdas (list): list of lambdas to test.
+        degrees (list): list of degrees to test.
+        k_fold (int, optional): number of folds. Defaults to 4.
+        verbose (int, optional): verbose level (0, 1 or 2). Defaults to 1.
+        plot (bool, optional): True to plot results of cross validation.
+        Defaults to False.
+        title (str, optional): title of the plot.
+        Defaults to 'Cross validation results'.
+
+    Returns:
+        list: best parameters.
+    """
+    proc_name = 'Cross validation'
+
+    # Split data in k fold
+    k_indices = build_k_indices(y, k_fold)
+
+    # Define lists to store accuracy of training data and test data
+    # and tuples of parameters (lambda, degree)
+    acc_tr, acc_te, params_list = list(), list(), list()
+
+    if verbose >= 1:
+        print_start(proc_name)
+
+    t_start = time.time()
+
+    mat = np.zeros((len(lambdas), len(degrees)))
+
+    # Cross validation
+    for i, lambda_ in enumerate(lambdas):
+        for j, degree in enumerate(degrees):
+            acc_tr_k, acc_te_k = list(), list()
+            for k in range(k_fold):
+                # Calculate the accuracy for train and test data
+                kwargs['lambda_'] = lambda_
+                a_tr, a_te = cross_validation_iter(
+                    y, x, optimizer, k_indices, k, degree, 'degree', **kwargs)
+
+                # Add accuracies to lists
+                acc_tr_k.append(a_tr)
+                acc_te_k.append(a_te)
+
+            # Calculate means and add to lists
+            acc_tr.append(np.mean(acc_tr_k))
+            acc_te.append(np.mean(acc_te_k))
+            params_list.append((lambda_, degree))
+            mat[i][j] = np.mean(acc_te_k)
+
+            if verbose >= 2:
+                print(f'[CP] (lambda, degree) = {params_list[-1]}, '
+                      f'Accuracy = {acc_te[-1]:.3f}')
+
+    # Get best param
+    best_params = params_list[np.argmax(acc_te)]
+    best_accuracy = np.max(acc_te)
+
+    if verbose >= 1:
+        print('[Results]')
+        print(f'- Best (lambda, degree): {best_params}')
+        print(f'- Best accuracy: {best_accuracy:.3f}')
+        print_end(proc_name, time.time() - t_start)
+
+    if plot:
+        plt.imshow(mat)
+
+        plt.xticks(np.arange(len(degrees)), degrees)
+        plt.yticks(np.arange(len(lambdas)),
+                   [f'{lambda_:.5f}' for lambda_ in lambdas])
+
+        plt.xlabel('Degree')
+        plt.ylabel('Lambda')
+        plt.title(title)
+
+    return best_params

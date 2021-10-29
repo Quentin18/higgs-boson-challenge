@@ -97,6 +97,12 @@ def main():
         degrees = clf_params['degree']
         del clf_params['degree']
 
+    if 'lambda_' in clf_params and isinstance(clf_params['lambda_'], list):
+        lambdas = clf_params['lambda_']
+        del clf_params['lambda_']
+    else:
+        lambdas = None
+
     w_by_jet = list()
     for i in range(NB_SUBSETS):
         print_subset_label(i)
@@ -106,6 +112,9 @@ def main():
 
         if is_logistic or is_gradient:
             clf_params['initial_w'] = np.zeros((x_tr_jet.shape[1], 1))
+
+        if lambdas:
+            clf_params['lambda_'] = lambdas[i]
 
         if need_polynomial_expansion:
             # Build polynomial basis

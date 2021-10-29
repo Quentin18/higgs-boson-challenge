@@ -78,7 +78,7 @@ def main():
         phi_tr_jet = build_poly(x_tr_jet, degrees[i])
 
         # Run ridge regression
-        w, loss = ridge_regression(y_tr_jet, phi_tr_jet, lambda_)
+        w, loss = ridge_regression(y_tr_jet, phi_tr_jet, lambda_[i])
         print(f'Loss = {loss:.3f}')
 
         # Add weights to list
