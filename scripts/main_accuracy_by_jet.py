@@ -3,165 +3,219 @@ Compute the accuracy score of a classification algorithm,
 and show confusion matrix.
 """
 # flake8: noqa: E402
+import argparse
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Import functions from src/
-from path import (DATA_TRAIN_PATH, add_src_to_path, create_out_dir,
-                  extract_archives)
-from proj1_helpers import load_csv_data
+from path import (add_src_to_path, load_json_parameters, DATA_TRAIN_PATH,
+                  FIGS_DIR)
+from csv_utils import load_csv_data
 
 # Add src/ to path to import implementations
 add_src_to_path()
 
 # Import functions from scripts/
-from clean_data import clean_data_by_jet, get_mean_std, standardize
+import implementations
+from clean_data import clean_train_test_data_by_jet
 from cross_validation import build_poly
 from helpers import predict_labels
-from implementations import (least_squares, logistic_regression,
-                             reg_logistic_regression)
 from metrics import accuracy_score, confusion_matrix
 from plot_utils import plot_accuracies, plot_confusion_matrix
-from print_utils import print_shapes, print_shapes_by_jet
-from split_data import split_by_jet, split_train_test
+from print_utils import (get_subset_label, print_shapes, print_shapes_by_jet,
+                         print_subset_label)
+from split_data import split_by_jet, split_train_test, NB_SUBSETS
 
-# Classifier to use
-# CLASSIFIER = 'least_squares'
-# CLASSIFIER = 'logistic_regression'
-CLASSIFIER = 'reg_logistic_regression'
+CLASSIFIERS = [
+    'gradient_descent',
+    'stochastic_gradient_descent',
+    'least_squares',
+    'ridge_regression',
+    'logistic_regression',
+    'regularized_logistic_regression'
+]
 
 
 def main():
     """
     Main function to compute the accuracy of classifiers.
     """
-    # Extract archives if needed
-    extract_archives()
+    # Parse args from command line
+    parser = argparse.ArgumentParser(
+        description='Compute the accuracy of a classifier.')
+    parser.add_argument(
+        '--clf', choices=CLASSIFIERS,
+        help='classifier to use (default: ridge_regression)',
+        default='ridge_regression')
+    args = parser.parse_args()
 
-    # Create output directory if needed
-    create_out_dir()
+    clf = args.clf
+    clf_name = clf.replace('_', ' ')
+
+    is_gradient = 'gradient' in clf
+    is_logistic = 'logistic' in clf
+    label_b = 0 if is_logistic else -1
 
     # Load the data
     print('[1/7] Load data')
-    y, x, _ = load_csv_data(DATA_TRAIN_PATH, label_b=0)
+    y, x, _ = load_csv_data(DATA_TRAIN_PATH, label_b=label_b)
     print_shapes(y, x)
 
     # Split data train test
-    print('[2/7] Split data train/test')
+    print('[2/7] Split data train and test')
     x_tr, x_te, y_tr, y_te = split_train_test(y, x)
 
-    print('[3/7] Split and clean train data by jet')
-    # Split train data by jet
+    # Split and clean train data
+    print('[3/7] Split train and test data by jet')
     y_tr_by_jet, x_tr_by_jet, _ = split_by_jet(y_tr, x_tr)
-
-    # Clean train data by jet
-    cols_to_remove_by_jet = clean_data_by_jet(y_tr_by_jet, x_tr_by_jet, k=0, std=False)
-
-    print_shapes_by_jet(y_tr_by_jet, x_tr_by_jet)
-
-    print('[4/7] Split and clean test data by jet')
-    # Split test data by jet
     y_te_by_jet, x_te_by_jet, _ = split_by_jet(y_te, x_te)
 
-    # Clean test data by jet
-    clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet, std=False)
+    print('[4/7] Clean train and test data')
+    y_tr_by_jet, x_tr_by_jet, y_te_by_jet, x_te_by_jet = \
+        clean_train_test_data_by_jet(y_tr_by_jet, x_tr_by_jet,
+                                     y_te_by_jet, x_te_by_jet)
+    print('Train:')
+    print_shapes_by_jet(y_tr_by_jet, x_tr_by_jet)
+    print('Test:')
     print_shapes_by_jet(y_te_by_jet, x_te_by_jet)
 
-    # Standardize
-    for i in range(len(x_tr_by_jet)):
-        mean, std = get_mean_std(x_tr_by_jet[i])
-        x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
-        x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
+    # Load parameters
+    print('[5/7] Load parameters')
+    params = load_json_parameters()
+    clf_params = params.get(clf)
+    if clf_params is None:
+        print('No parameters found. Exit.')
+        return
+    print(clf_params)
 
-    print('[5/7] Run classification algorithm')
+    print(f'[6/7] Run {clf_name}')
+
+    if clf == 'ridge_regression':
+        degrees = clf_params['degree']
+        del clf_params['degree']
 
     w_by_jet = list()
-    if CLASSIFIER == 'least_squares':
-        for i, x_tr_jet, y_tr_jet in zip(range(len(x_tr_by_jet)),
-                                         x_tr_by_jet, y_tr_by_jet):
-            print(f'Jet = {i}:')
-            w, _ = least_squares(y_tr_jet, x_tr_jet)
-            w_by_jet.append(w)
+    for i in range(NB_SUBSETS):
+        print_subset_label(i)
 
-    elif CLASSIFIER == 'logistic_regression':
-        max_iters = 5000
-        gamma = 1e-5
-        threshold = 1e-8
-        for i, x_tr_jet, y_tr_jet in zip(range(len(x_tr_by_jet)),
-                                         x_tr_by_jet, y_tr_by_jet):
-            print(f'Jet = {i}:')
-            initial_w = np.zeros((x_tr_jet.shape[1], 1))
-            w, _ = logistic_regression(y_tr_jet, x_tr_jet, initial_w,
-                                       max_iters, gamma, threshold,
-                                       info=True, agd=True)
-            w_by_jet.append(w)
+        # Get train subset
+        x_tr_jet, y_tr_jet = x_tr_by_jet[i], y_tr_by_jet[i]
 
-    elif CLASSIFIER == 'reg_logistic_regression':
-        lambda_ = 1e-2
-        max_iters = 5000
-        gamma = 1e-5
-        threshold = 1e-8
-        for i, x_tr_jet, y_tr_jet in zip(range(len(x_tr_by_jet)),
-                                         x_tr_by_jet, y_tr_by_jet):
-            print(f'Jet = {i}:')
-            initial_w = np.zeros((x_tr_jet.shape[1], 1))
-            w, _ = reg_logistic_regression(y_tr_jet, x_tr_jet, lambda_,
-                                           initial_w, max_iters, gamma,
-                                           threshold, info=True)
-            w_by_jet.append(w)
+        if is_logistic or is_gradient:
+            clf_params['initial_w'] = np.zeros((x_tr_jet.shape[1], 1))
 
-    else:
-        print('Unknown classifier')
-        return
+        # Run algorithm on train data
+        if clf == 'gradient_descent':
+            w, _ = implementations.least_squares_GD(
+                y_tr_jet, x_tr_jet, **clf_params)
 
-    # Predict test data by jet
-    plt.figure(figsize=(8, 8))
+        elif clf == 'stochastic_gradient_descent':
+            w, _ = implementations.least_squares_SGD(
+                y_tr_jet, x_tr_jet, **clf_params)
+
+        elif clf == 'least_squares':
+            w, _ = implementations.least_squares(
+                y_tr_jet, x_tr_jet, **clf_params)
+
+        elif clf == 'ridge_regression':
+            # Build polynomial basis
+            phi_tr_jet = build_poly(x_tr_jet, degrees[i])
+
+            w, _ = implementations.ridge_regression(
+                y_tr_jet, phi_tr_jet, **clf_params)
+
+        elif clf == 'logistic_regression':
+            w, _ = implementations.logistic_regression(
+                y_tr_jet, x_tr_jet, **clf_params)
+
+        elif clf == 'regularized_logistic_regression':
+            w, _ = implementations.reg_logistic_regression(
+                y_tr_jet, x_tr_jet, **clf_params)
+
+        else:
+            print('Unknown classifier. Exit.')
+            return
+
+        # Add weights to list
+        w_by_jet.append(w)
+
+    # Generate predictions
+    print('[7/8] Generate predictions')
+
     y_pred_by_jet = list()
     accuracies = list()
+    conf_matrices = list()
 
-    use_sigmoid = CLASSIFIER in ['logistic_regression',
-                                 'reg_logistic_regression']
+    for i in range(NB_SUBSETS):
+        print_subset_label(i)
 
-    for i, w, x_te_jet, y_te_jet in zip(
-        range(len(y_te_by_jet)), w_by_jet,x_te_by_jet, y_te_by_jet):
-        print(f'Jet = {i}:')
-        # Predict labels
-        if use_sigmoid:
+        # Get subset
+        x_te_jet, y_te_jet, w = x_te_by_jet[i], y_te_by_jet[i], w_by_jet[i]
+
+        # Build polynomial basis
+        if clf == 'ridge_regression':
+            x_te_jet = build_poly(x_te_jet, degrees[i])
+
+        elif is_logistic:
             x_te_jet = np.c_[np.ones((y_te_jet.shape[0], 1)), x_te_jet]
-        y_pred = predict_labels(w, x_te_jet, label_b_in=0, label_b_out=0,
-                                use_sigmoid=use_sigmoid)
+
+        # Predict labels
+        y_pred = predict_labels(w, x_te_jet, label_b=label_b,
+                                use_sigmoid=is_logistic)
         y_pred_by_jet.append(y_pred)
 
         # Accuracy score
         accuracy = accuracy_score(y_te_jet, y_pred)
         accuracies.append(accuracy)
-        print(f'Accuracy score: {accuracy:.2f}')
 
         # Confusion matrix
-        ax = plt.subplot(2, 2, i + 1)
-        conf_matrix = confusion_matrix(y_te, y_pred)
-        plot_confusion_matrix(conf_matrix, ax=ax, title=f'Jet = {i}')
-
-    plt.suptitle('Confusion matrices')
-    plt.tight_layout()
-    plt.show()
-
-    # Plot accuracies
-    plot_accuracies(accuracies)
-    plt.show()
+        conf_matrix = confusion_matrix(y_te_jet, y_pred)
+        conf_matrices.append(conf_matrix)
 
     # Concatenate results
     y_te = np.concatenate(y_te_by_jet)
     y_pred = np.concatenate(y_pred_by_jet)
 
     # Global accuracy
-    print(f'Global accuracy score: {accuracy_score(y_te, y_pred):.2f}')
+    global_accuracy = accuracy_score(y_te, y_pred)
+    print(f'Accuracy = {global_accuracy:.4f}')
 
     # Global confusion matrix
-    conf_matrix = confusion_matrix(y_te, y_pred)
+    global_conf_matrix = confusion_matrix(y_te, y_pred)
+    plot_confusion_matrix(global_conf_matrix)
 
-    # Plot confusion matrix
-    plot_confusion_matrix(conf_matrix)
+    # Plot confusion matrices
+    plt.figure(figsize=(8, 8))
+
+    # Plot subset matrices
+    for i in range(NB_SUBSETS):
+        ax = plt.subplot(2, 2, i + 1)
+        plot_confusion_matrix(conf_matrices[i], ax=ax,
+                              title=get_subset_label(i))
+
+    # Plot global matrix
+    ax = plt.subplot(2, 2, 4)
+    plot_confusion_matrix(global_conf_matrix, ax=ax, title='Global')
+
+    plt.suptitle(f'Confusion matrices with {clf_name}')
+    plt.tight_layout()
+
+    # Save figure
+    path = os.path.join(FIGS_DIR, f'confusion_matrix_{clf}.pdf')
+    plt.savefig(path)
+
+    # Plot accuracies
+    plot_accuracies(accuracies + [global_accuracy],
+                    title=f'Accuracies with {clf_name}')
+    plt.tight_layout()
+
+    # Save figure
+    path = os.path.join(FIGS_DIR, f'accuracy_{clf}.pdf')
+    plt.savefig(path)
+
+    plt.show()
 
 
 if __name__ == '__main__':

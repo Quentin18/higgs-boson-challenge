@@ -54,18 +54,15 @@ def sigmoid(t: float) -> float:
     return 1 / (1 + np.exp(-t))
 
 
-def predict_labels(weights: np.ndarray, data: np.ndarray,
-                   label_b_in: int = -1, label_b_out: int = -1,
+def predict_labels(weights: np.ndarray, data: np.ndarray, label_b: int = -1,
                    use_sigmoid: bool = False) -> np.ndarray:
     """Generates class predictions given weights, and a test data matrix.
 
     Args:
         weights (np.ndarray): vector of weights.
         data (np.ndarray): matrix of test data.
-        label_b_in (int, optional): label of "b" event in input data
-        (-1 or 0). Defaults to -1.
-        label_b_out (int, optional): label of "b" event out input data
-        (-1 or 0). Defaults to -1.
+        label_b (int, optional): label of "b" event (-1 or 0).
+        Defaults to -1.
         use_sigmoid (bool, optional): True to use the sigmoid function to
         predict labels. Defaults to False.
 
@@ -80,7 +77,7 @@ def predict_labels(weights: np.ndarray, data: np.ndarray,
         threshold = 0
 
     # Select class label
-    y_pred[np.where(y_pred <= threshold)] = label_b_out
+    y_pred[np.where(y_pred <= threshold)] = label_b
     y_pred[np.where(y_pred > threshold)] = 1
 
     # Convert result to array of int
