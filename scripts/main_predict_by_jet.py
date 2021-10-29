@@ -14,7 +14,7 @@ from path import (add_src_to_path, load_json_parameters, DATA_TEST_PATH,
 add_src_to_path()
 
 # Import functions from src/
-from clean_data import clean_data_by_jet, get_mean_std, standardize
+from clean_data import clean_train_test_data_by_jet
 from cross_validation import build_poly
 from implementations import ridge_regression
 from split_data import split_by_jet
@@ -44,24 +44,18 @@ def main():
     print_shapes(y_te, x_te)
 
     # Split and clean train data
-    print('[3/8] Split and clean train data')
+    print('[3/8] Split train and test data by jet')
     y_tr_by_jet, x_tr_by_jet, _ = split_by_jet(y_tr, x_tr, ids_tr)
-    cols_to_remove_by_jet = clean_data_by_jet(y_tr_by_jet, x_tr_by_jet,
-                                              std=False)
-    print_shapes_by_jet(y_tr_by_jet, x_tr_by_jet)
-
-    # Split and clean test data
-    print('[4/8] Split and clean test data')
     y_te_by_jet, x_te_by_jet, ids_te_by_jet = split_by_jet(y_te, x_te, ids_te)
-    clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet,
-                      std=False)
-    print_shapes_by_jet(y_te_by_jet, x_te_by_jet)
 
-    # Standardize
-    for i in range(NB_SUBSETS):
-        mean, std = get_mean_std(x_tr_by_jet[i])
-        x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
-        x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
+    print('[4/8] Clean train and test data')
+    y_tr_by_jet, x_tr_by_jet, y_te_by_jet, x_te_by_jet = \
+        clean_train_test_data_by_jet(y_tr_by_jet, x_tr_by_jet,
+                                     y_te_by_jet, x_te_by_jet)
+    print('Train:')
+    print_shapes_by_jet(y_tr_by_jet, x_tr_by_jet)
+    print('Test:')
+    print_shapes_by_jet(y_te_by_jet, x_te_by_jet)
 
     # Load parameters
     print('[5/7] Load parameters')
