@@ -2,7 +2,7 @@
 
 Project 1 of the Machine Learning course given at the EPFL Fall 2021.
 
-## Stategy
+## Strategy
 
 The main strategy is the following:
 
@@ -18,6 +18,26 @@ The main strategy is the following:
 - Perform ridge regression for each subset.
 - Predict the labels for each test subset using the model determined with each train subset.
 - Merge the results.
+
+## Scripts
+
+- `main_accuracy_by_jet.py`: compute the accuracy of a classifier. The dataset is splited in 3 subsets.
+It loads the parameters of optimization algorithms in the `parameters.json` file. The figures are saved in the `figs` directory.
+The program shows:
+    - The global accuracy score and the one for each subset.
+    - The global confusion matrix and the one for each subset.
+
+Usage:
+```
+python3 main_accuracy_by_jet.py --clf [CLASSIFIER]
+```
+Where `CLASSIFIER` can be:
+- `gradient_descent`
+- `stochastic_gradient_descent`
+- `least_squares`
+- `ridge_regression` (default)
+- `logistic_regression`
+- `regularized_logistic_regression`
 
 ## Results
 
