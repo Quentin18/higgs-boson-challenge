@@ -18,7 +18,7 @@ def batch_iter(y: np.ndarray, tx: np.ndarray, batch_size: int,
     Args:
         y (np.ndarray): output desired values.
         tx (np.ndarray): input data.
-        batch_size (int): batch size
+        batch_size (int): batch size.
         num_batches (int, optional): number of batches. Defaults to 1.
         shuffle (bool, optional): shuffle data. Defaults to True.
 
@@ -87,22 +87,3 @@ def predict_labels(weights: np.ndarray, data: np.ndarray,
     y_pred = y_pred.astype(int)
 
     return y_pred
-
-
-def merge_y(y: tuple, indices: tuple) -> np.ndarray:
-    """Merge y for submission.
-
-    Args:
-        y (tuple) : y to merge.
-        indices (tuple) : indices of y to merge
-
-    Returns:
-        np.ndarray: y merge.
-    """
-    shape_tot = 0
-    for y_split in y:
-        shape_tot += y_split.shape[0]
-    y_merge = np.zeros(shape=(shape_tot, 1))
-    for i, y_split in zip(indices, y):
-        y_merge[i, 0] = y_split
-    return y_merge
