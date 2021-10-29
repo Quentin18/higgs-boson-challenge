@@ -9,6 +9,7 @@ import numpy as np
 
 from helpers import predict_labels
 from metrics import accuracy_score
+from print_utils import print_end, print_start
 
 
 def build_k_indices(y: np.ndarray, k_fold: int) -> np.ndarray:
@@ -116,14 +117,16 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
     Returns:
         int or float: best parameter.
     """
+    proc_name = 'Cross validation'
+
     # Split data in k fold
     k_indices = build_k_indices(y, k_fold)
 
     # Define lists to store accuracy of training data and test data
     acc_tr, acc_te = list(), list()
 
-    if verbose == 1:
-        print('[Start] Cross validation')
+    if verbose >= 1:
+        print_start(proc_name)
 
     t_start = time.time()
 
@@ -143,7 +146,7 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
         acc_tr.append(np.mean(acc_tr_k))
         acc_te.append(np.mean(acc_te_k))
 
-        if verbose == 2:
+        if verbose >= 2:
             print(f'[CP] {param_name.capitalize()} = {param}, '
                   f'Accuracy = {acc_te[-1]:.3f}')
 
@@ -151,12 +154,11 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
     best_param = param_list[np.argmax(acc_te)]
     best_accuracy = np.max(acc_te)
 
-    if verbose == 1:
+    if verbose >= 1:
         print('[Results]')
         print(f'- Best {param_name}: {best_param}')
         print(f'- Best accuracy: {best_accuracy:.3f}')
-        print(
-            f'[End] Cross validation (time: {time.time() - t_start:.2f} s.)')
+        print_end(proc_name, time.time() - t_start)
 
     if plot:
         plt.plot(param_list, acc_tr, marker='*', label='Train accuracy')
