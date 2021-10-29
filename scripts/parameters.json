@@ -1,17 +1,22 @@
 {
     "gradient_descent": {
         "max_iters": 5000,
-        "gamma": 1e-5,
+        "gamma": 1e-05,
         "verbose": 1
     },
     "stochastic_gradient_descent": {
         "max_iters": 5000,
-        "gamma": 1e-5,
+        "gamma": 1e-05,
         "batch_size": 1,
         "verbose": 1
     },
     "least_squares": {
-        "verbose": true
+        "verbose": true,
+        "degree": [
+            9,
+            11,
+            11
+        ]
     },
     "ridge_regression": {
         "lambda_": 0.001,
@@ -24,16 +29,16 @@
     },
     "logistic_regression": {
         "max_iters": 5000,
-        "gamma": 1e-5,
-        "threshold": 1e-8,
+        "gamma": 1e-05,
+        "threshold": 1e-08,
         "verbose": 1,
         "agd": true
     },
     "regularized_logistic_regression": {
-        "lambda_": 1e-2,
+        "lambda_": 0.01,
         "max_iters": 5000,
-        "gamma": 1e-5,
-        "threshold": 1e-8,
+        "gamma": 1e-05,
+        "threshold": 1e-08,
         "verbose": 1
     }
 }

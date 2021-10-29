@@ -25,7 +25,7 @@ Model | Accuracy
 --- | ---
 Gradient Descent | **TODO**
 Stochastic Gradient Descent | **TODO**
-Least squares | **TODO**
+Least squares | 0.824
 Ridge regression | 0.828
 Logistic regression | **TODO**
 Regularized logistic regression | **TODO**

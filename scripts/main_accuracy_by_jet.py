@@ -56,6 +56,7 @@ def main():
 
     is_gradient = 'gradient' in clf
     is_logistic = 'logistic' in clf
+    need_polynomial_expansion = clf in ('least_squares', 'ridge_regression')
     label_b = 0 if is_logistic else -1
 
     # Load the data
@@ -92,7 +93,7 @@ def main():
 
     print(f'[6/7] Run {clf_name}')
 
-    if clf == 'ridge_regression':
+    if need_polynomial_expansion:
         degrees = clf_params['degree']
         del clf_params['degree']
 
@@ -105,6 +106,10 @@ def main():
 
         if is_logistic or is_gradient:
             clf_params['initial_w'] = np.zeros((x_tr_jet.shape[1], 1))
+
+        if need_polynomial_expansion:
+            # Build polynomial basis
+            x_tr_jet = build_poly(x_tr_jet, degrees[i])
 
         # Run algorithm on train data
         if clf == 'gradient_descent':
@@ -120,11 +125,8 @@ def main():
                 y_tr_jet, x_tr_jet, **clf_params)
 
         elif clf == 'ridge_regression':
-            # Build polynomial basis
-            phi_tr_jet = build_poly(x_tr_jet, degrees[i])
-
             w, _ = implementations.ridge_regression(
-                y_tr_jet, phi_tr_jet, **clf_params)
+                y_tr_jet, x_tr_jet, **clf_params)
 
         elif clf == 'logistic_regression':
             w, _ = implementations.logistic_regression(
@@ -155,7 +157,7 @@ def main():
         x_te_jet, y_te_jet, w = x_te_by_jet[i], y_te_by_jet[i], w_by_jet[i]
 
         # Build polynomial basis
-        if clf == 'ridge_regression':
+        if need_polynomial_expansion:
             x_te_jet = build_poly(x_te_jet, degrees[i])
 
         elif is_logistic:
