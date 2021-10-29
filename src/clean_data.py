@@ -13,7 +13,7 @@ def get_mean_std(x: np.ndarray) -> tuple:
         x (np.ndarray): matrix.
 
     Returns:
-        tuple: mean, std
+        tuple: mean, std.
     """
     return np.mean(x, axis=0), np.std(x, axis=0)
 
@@ -33,6 +33,40 @@ def standardize(x: np.ndarray, mean: np.ndarray = None,
     if mean is None and std is None:
         mean, std = get_mean_std(x)
     return (x - mean) / std
+
+
+def replace_empty_with_median(x: np.ndarray, value: int = -999) -> np.ndarray:
+    """Replaces empty cells with median of true values.
+
+    Args:
+        x (np.ndarray): matrix.
+        value (int, optional): empty value. Defaults to -999.
+
+    Returns:
+        np.ndarray: x with empty values replaced by median.
+    """
+    for i in range(x.shape[1]):
+        ind_full_cell = np.where(x[:, i] != value)
+        median_feature = np.median(x[ind_full_cell, i])
+        ind_empty_cell = np.where(x[:, i] == value)
+        x[ind_empty_cell, i] = median_feature
+    return x
+
+
+def remove_outliers(y: np.ndarray, x: np.ndarray, k: int) -> tuple:
+    """Removes the outliers from x and y.
+
+    Args:
+        y (np.ndarray): output desired values.
+        x (np.ndarray): input data.
+        k (int): threashold.
+
+    Returns:
+        tuple: x and y without outliers.
+    """
+    mu, sigma = np.mean(x, axis=0), np.std(x, axis=0, ddof=1)
+    indices = np.all(np.abs((x - mu) / sigma) < k, axis=1)
+    return y[indices], x[indices]
 
 
 def drop_columns(x: np.ndarray, indices: list) -> np.ndarray:
@@ -81,7 +115,7 @@ def get_columns_all_same(x: np.ndarray) -> np.ndarray:
 
 
 def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
-                              k: float = 1e-3) -> np.ndarray:
+                              k: float = 1e-3, label_b: int = 0) -> np.ndarray:
     """Returns the columns indices of x useless according to Anova.
 
     Args:
@@ -89,139 +123,147 @@ def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
         x (np.ndarray): input data.
         k (float, optional): critique value for feature selection with
         anova test. Defaults to 1e-3.
+        label_b (int, optional): label of "b" events. Defaults to 0.
 
     Returns:
         np.ndarray: columns indices.
     """
-    features, f = anova_test(y, x, label_b=0)
+    features, f = anova_test(y, x, label_b)
     ind_to_remove = np.where(f < k)
     features_to_remove = features[ind_to_remove]
     return features_to_remove.astype(int)
 
 
+def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
+               replace_empty: bool = True, std: bool = True) -> np.ndarray:
+    """Cleans a dataset.
+
+    - Removes columns.
+    - Replaces empty cells with median.
+    - Standardizes columns.
+
+    Args:
+        x (np.ndarray): input data.
+        cols_to_remove (np.ndarray, optional): columns to remove.
+        Defaults to None.
+        replace_empty (bool, optional): True to replace empty data by median.
+        Defaults to True.
+        std (bool, optional): True to standardize data. Defaults to True.
+
+    Returns:
+        np.ndarray: cleaned data.
+    """
+    # Remove columns if needed
+    if cols_to_remove is not None and cols_to_remove.size:
+        x = drop_columns(x, cols_to_remove)
+
+    # Replace empty cells with median
+    if replace_empty:
+        x = replace_empty_with_median(x)
+
+    # Standardize data
+    if std:
+        x = standardize(x)
+
+    return x
+
+
 def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
-                                 k: float = 1e-3) -> list:
+                                 k_anova: float = None) -> list:
     """Returns the columns indices to remove by jet.
 
     A column needs to be removed if:
     - All its values are the same.
-    - The feature is useless according to Anova.
+    - The feature is useless according to Anova (optional).
 
     Args:
         y_by_jet (list): y labels by jet.
         x_by_jet (list): x matrices by jet.
-        k (float): critical value for anova filter. Defaults to 1e-3.
+        k_anova (float): critical value for anova filter. Defaults to None.
 
     Returns:
         list: columns indices to remove by jet.
     """
-    # columns_to_remove = []
-    # for x, y in zip(x_by_jet, y_by_jet):
-    #     c1 = get_columns_all_same(x)
-    #     c2 = get_columns_useless_anova(y, x[:, ~c1], k)
-    #     columns_to_remove.append(np.concatenate((c1, c2)))
-    # return columns_to_remove
-    return [get_columns_all_same(x) for x in x_by_jet]
+    columns_to_remove = []
+    for x, y in zip(x_by_jet, y_by_jet):
+        cols = get_columns_all_same(x)
+        if k_anova is not None:
+            cols_anova = get_columns_useless_anova(y, x[:, ~cols], k_anova)
+            cols = np.concatenate((cols, cols_anova))
+        columns_to_remove.append(cols)
+    return columns_to_remove
 
 
 def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
-                      cols_to_remove_by_jet: list = None, std: bool = True,
-                      k: float = 1e-3) -> list:
+                      cols_to_remove_by_jet: list = None,
+                      replace_empty: bool = True, std: bool = True,
+                      k_anova: float = None) -> list:
     """Cleans the dataset by jet.
 
-    It removes columns with same data and useless features with the anova test.
-    Standardize the other columns.
+    - Removes columns with same data.
+    - Removes useless features according to Anova test (optional).
+    - Replaces -999 by median (optional).
+    - Standardizes columns (optional).
 
     Args:
         y_by_jet (list): y labels by jet.
         x_by_jet (list): x matrices by jet.
         cols_to_remove_by_jet (list, optional): list of columns to remove by
         jet. Defaults to None.
+        replace_empty (bool, optional): True to replace empty data by median.
+        Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
-        k: (float, optional): critical values for anova test. Defaults to 1e-3.
+        k_anova: (float, optional): critical values for Anova test.
+        Defaults to None.
 
     Returns:
         list: columns to remove by jet.
     """
+    # Get columns to remove
     if cols_to_remove_by_jet is None:
         cols_to_remove_by_jet = get_columns_to_remove_by_jet(
-            y_by_jet, x_by_jet, k=k)
+            y_by_jet, x_by_jet, k_anova)
+
+    # Clean data
     for i in range(len(x_by_jet)):
-        # Remove columns if needed
-        if cols_to_remove_by_jet[i].size:
-            x_by_jet[i] = drop_columns(x_by_jet[i], cols_to_remove_by_jet[i])
-        # Replace empty with mean
-        x_by_jet[i] = replace_empty_with_median(x_by_jet[i])
-        # Standardize data
-        if std:
-            x_by_jet[i] = standardize(x_by_jet[i])
+        x_by_jet[i] = clean_data(
+            x_by_jet[i], cols_to_remove_by_jet[i], replace_empty, std)
+
     return cols_to_remove_by_jet
 
 
-def replace_empty_with_median(x: np.ndarray, value: int = -999) -> np.ndarray:
-    """Replaces empty cells with median of true values.
+def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
+                                 y_te_by_jet: list, x_te_by_jet: list,
+                                 replace_empty: bool = True,
+                                 k_anova: float = None) -> tuple:
+    """Cleans train and test data by jet.
 
     Args:
-        x (np.ndarray): matrix.
-        value (int, optional): empty value. Defaults to -999.
+        y_tr_by_jet (list): y train labels by jet.
+        x_tr_by_jet (list): x train matrices by jet.
+        y_te_by_jet (list): y test labels by jet.
+        x_te_by_jet (list): x test matrices by jet.
+        replace_empty (bool, optional): True to replace empty data by median.
+        Defaults to True.
+        k_anova: (float, optional): critical values for Anova test.
+        Defaults to None.
 
     Returns:
-        np.ndarray: x with empty values replaced by median.
+        tuple: (y_tr_by_jet, x_tr_by_jet, y_te_by_jet, x_te_by_jet)
     """
-    for i in range(x.shape[1]):
-        ind_full_cell = np.where(x[:, i] != value)
-        median_feature = np.median(x[ind_full_cell, i])
-        ind_empty_cell = np.where(x[:, i] == value)
-        x[ind_empty_cell, i] = median_feature
-    return x
+    # Clean train data
+    cols_to_remove_by_jet = clean_data_by_jet(
+        y_tr_by_jet, x_tr_by_jet, replace_empty=replace_empty, std=False,
+        k_anova=k_anova)
 
+    # Clean test data
+    clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet,
+                      replace_empty=replace_empty, std=False)
 
-def replace_nan_to_zero(x: np.ndarray) -> np.ndarray:
-    """Replaces the nan values by zero in x.
+    # Standardize train and test using mean and std of train
+    for i in range(len(x_tr_by_jet)):
+        mean, std = get_mean_std(x_tr_by_jet[i])
+        x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
+        x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
 
-    Args:
-        x (np.ndarray): matrix.
-
-    Returns:
-        np.ndarray: matrix x with zeros instead of nan.
-    """
-    x[np.isnan(x)] = 0
-    return x
-
-
-def under_sample(y: np.ndarray, x: np.ndarray) -> tuple:
-    """Deletes instances from the over-represented class.
-
-    Args:
-        y (np.ndarray): output desired values.
-        x (np.ndarray): input data.
-
-    Returns:
-        tuple: y and x with deleted instances.
-    """
-    unique, counts = np.unique(y, return_counts=True)
-    index_class_over_represented = np.argmax(counts)
-    index_class_under_represented = np.argmin(counts)
-    class_over_represented = unique[index_class_over_represented]
-    indices = np.where(y == class_over_represented)[0]
-    nb_to_remove = counts[index_class_over_represented] - \
-        counts[index_class_under_represented]
-    indices_to_remove = indices[:nb_to_remove]
-    return (np.delete(y, indices_to_remove),
-            np.delete(x, indices_to_remove, axis=0))
-
-
-def remove_outliers(y: np.ndarray, x: np.ndarray, k: int) -> tuple:
-    """Removes the outliers from x and y.
-
-    Args:
-        y (np.ndarray): output desired values.
-        x (np.ndarray): input data.
-        k (int): threashold.
-
-    Returns:
-        tuple: x and y without outliers.
-    """
-    mu, sigma = np.mean(x, axis=0), np.std(x, axis=0, ddof=1)
-    indices = np.all(np.abs((x - mu) / sigma) < k, axis=1)
-    return y[indices], x[indices]
+    return y_tr_by_jet, x_tr_by_jet, y_te_by_jet, x_te_by_jet
