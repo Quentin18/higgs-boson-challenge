@@ -35,6 +35,12 @@ def standardize(x: np.ndarray, mean: np.ndarray = None,
     return (x - mean) / std
 
 
+def robust_scale(x: np.ndarray):
+    median = np.median(x, axis=0)
+    iqr = np.subtract(*np.percentile(x, [75, 25], axis=0))
+    return (x - median) / iqr
+
+
 def replace_empty_with_median(x: np.ndarray, value: int = -999) -> np.ndarray:
     """Replaces empty cells with median of true values.
 
@@ -139,7 +145,8 @@ def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
 
 
 def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
-               replace_empty: bool = True, std: bool = True) -> np.ndarray:
+               replace_empty: bool = True, std: bool = True,
+               rob_scale: bool = False) -> np.ndarray:
     """Cleans a dataset.
 
     - Removes columns.
@@ -153,6 +160,8 @@ def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
         replace_empty (bool, optional): True to replace empty data by median.
         Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
+        rob_scale (bool, optional): True to robust scale data.
+        Defaults to False.
 
     Returns:
         np.ndarray: cleaned data.
@@ -168,6 +177,9 @@ def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
     # Standardize data
     if std:
         x = standardize(x)
+
+    if rob_scale:
+        x = robust_scale(x)
 
     return x
 
@@ -208,6 +220,7 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
 def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
                       cols_to_remove_by_jet: list = None,
                       replace_empty: bool = True, std: bool = True,
+                      rob_scale: bool = False,
                       k_anova: float = None, label_b: int = -1) -> list:
     """Cleans the dataset by jet.
 
@@ -224,6 +237,8 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
         replace_empty (bool, optional): True to replace empty data by median.
         Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
+        rob_scale (bool, optional): True to robust scale data.
+        Defaults to False.
         k_anova: (float, optional): critical values for Anova test.
         label_b: (int, optional): for anova test -1 or 1
         Defaults to None.
@@ -238,7 +253,8 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
     # Clean data
     for i in range(len(x_by_jet)):
         x_by_jet[i] = clean_data(
-            x_by_jet[i], cols_to_remove_by_jet[i], replace_empty, std)
+            x_by_jet[i], cols_to_remove_by_jet[i], replace_empty, std=std,
+            rob_scale=rob_scale)
 
     return cols_to_remove_by_jet
 

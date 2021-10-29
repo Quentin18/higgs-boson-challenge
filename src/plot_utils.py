@@ -130,7 +130,7 @@ def scatter(x1: np.ndarray, x2: np.ndarray, y: np.ndarray, label_b=0,
         plt.show()
 
 
-def scatter_all_features(x: np.ndarray, y: np.ndarray, label_b=0) -> None:
+def scatter_all_features(y: np.ndarray, x: np.ndarray, label_b=0) -> None:
     """Plot all features in a scatter plot
 
         Args:
@@ -144,5 +144,6 @@ def scatter_all_features(x: np.ndarray, y: np.ndarray, label_b=0) -> None:
     j = 0
     for i in range(0, nb_features-1, 2):
         j += 1
-        scatter(x[:, i], x[:, i+1], y, label_b=0, xlabel="Feature %d" % i,
+        scatter(x[:, i], x[:, i+1], y, label_b=label_b,
+                xlabel="Feature %d" % i,
                 ylabel="Feature %d" % (i+1))
