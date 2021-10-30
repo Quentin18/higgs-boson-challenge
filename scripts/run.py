@@ -3,6 +3,7 @@ Generate predictions for AIcrowd.
 """
 # flake8: noqa: E402
 import os
+
 import numpy as np
 
 # Import functions from scripts/
@@ -26,7 +27,7 @@ from print_utils import (print_shapes, print_shapes_by_jet, print_subset_label,
 CLASSIFIER = 'ridge_regression'
 
 # Output file path
-OUTPUT_PATH = os.path.join(OUT_DIR, 'predictions_ridge_regression.csv')
+OUTPUT_PATH = os.path.join(OUT_DIR, 'predictions.csv')
 
 
 def main():
@@ -78,7 +79,7 @@ def main():
         phi_tr_jet = build_poly(x_tr_jet, degrees[i])
 
         # Run ridge regression
-        w, loss = ridge_regression(y_tr_jet, phi_tr_jet, lambda_)
+        w, loss = ridge_regression(y_tr_jet, phi_tr_jet, lambda_[i])
         print(f'Loss = {loss:.3f}')
 
         # Add weights to list

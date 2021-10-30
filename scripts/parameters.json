@@ -19,11 +19,15 @@
         ]
     },
     "ridge_regression": {
-        "lambda_": 0.001,
+        "lambda_": [
+            0.001,
+            0.001,
+            0.001
+        ],
         "degree": [
-            11,
-            12,
-            10
+            13,
+            14,
+            13
         ],
         "verbose": true
     },

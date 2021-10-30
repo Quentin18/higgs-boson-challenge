@@ -18,6 +18,23 @@ def get_mean_std(x: np.ndarray) -> tuple:
     return np.mean(x, axis=0), np.std(x, axis=0)
 
 
+def log_transform(x: np.ndarray, min_: float = None) -> np.ndarray:
+    """Applies a log transform on the matrix.
+
+    Args:
+        x (np.ndarray): matrix.
+        min_ (float, optional): minimum to scale values of x. Defaults to None.
+
+    Returns:
+        np.ndarray: matrix after log transform.
+    """
+    if min_ is None:
+        min_ = np.min(x)
+    if not np.all(x > 0):
+        x = x - min_ + 1
+    return np.log(x)
+
+
 def standardize(x: np.ndarray, mean: np.ndarray = None,
                 std: np.ndarray = None) -> np.ndarray:
     """Outputs the matrix x after normalization.
@@ -35,7 +52,15 @@ def standardize(x: np.ndarray, mean: np.ndarray = None,
     return (x - mean) / std
 
 
-def robust_scale(x: np.ndarray):
+def robust_scale(x: np.ndarray) -> np.ndarray:
+    """Scales the matrix x using robust scale.
+
+    Args:
+        x (np.ndarray): matrix.
+
+    Returns:
+        np.ndarray: x after robust scale.
+    """
     median = np.median(x, axis=0)
     iqr = np.subtract(*np.percentile(x, [75, 25], axis=0))
     return (x - median) / iqr
@@ -145,12 +170,13 @@ def get_columns_useless_anova(y: np.ndarray, x: np.ndarray,
 
 
 def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
-               replace_empty: bool = True, std: bool = True,
+               replace_empty: bool = True, log: bool = True, std: bool = True,
                rob_scale: bool = False) -> np.ndarray:
     """Cleans a dataset.
 
     - Removes columns.
     - Replaces empty cells with median.
+    - Applies log transform.
     - Standardizes columns.
 
     Args:
@@ -159,6 +185,7 @@ def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
         Defaults to None.
         replace_empty (bool, optional): True to replace empty data by median.
         Defaults to True.
+        log (bool, optional): True to apply log transform. Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
         rob_scale (bool, optional): True to robust scale data.
         Defaults to False.
@@ -174,10 +201,15 @@ def clean_data(x: np.ndarray, cols_to_remove: np.ndarray = None,
     if replace_empty:
         x = replace_empty_with_median(x)
 
+    # Log transform
+    if log:
+        x = log_transform(x)
+
     # Standardize data
     if std:
         x = standardize(x)
 
+    # Robust scale
     if rob_scale:
         x = robust_scale(x)
 
@@ -219,14 +251,15 @@ def get_columns_to_remove_by_jet(y_by_jet: list, x_by_jet: list,
 
 def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
                       cols_to_remove_by_jet: list = None,
-                      replace_empty: bool = True, std: bool = True,
-                      rob_scale: bool = False,
+                      replace_empty: bool = True, log: bool = True,
+                      std: bool = True, rob_scale: bool = False,
                       k_anova: float = None, label_b: int = -1) -> list:
     """Cleans the dataset by jet.
 
     - Removes columns with same data.
     - Removes useless features according to Anova test (optional).
     - Replaces -999 by median (optional).
+    - Log transform data (optional).
     - Standardizes columns (optional).
 
     Args:
@@ -236,6 +269,7 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
         jet. Defaults to None.
         replace_empty (bool, optional): True to replace empty data by median.
         Defaults to True.
+        log (bool, optional): True to appy log transform. Defaults to True.
         std (bool, optional): True to standardize data. Defaults to True.
         rob_scale (bool, optional): True to robust scale data.
         Defaults to False.
@@ -250,11 +284,12 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
     if cols_to_remove_by_jet is None:
         cols_to_remove_by_jet = get_columns_to_remove_by_jet(
             y_by_jet, x_by_jet, k_anova=k_anova, label_b=label_b)
+
     # Clean data
     for i in range(len(x_by_jet)):
         x_by_jet[i] = clean_data(
-            x_by_jet[i], cols_to_remove_by_jet[i], replace_empty, std=std,
-            rob_scale=rob_scale)
+            x_by_jet[i], cols_to_remove_by_jet[i], replace_empty, log=log,
+            std=std, rob_scale=rob_scale)
 
     return cols_to_remove_by_jet
 
@@ -264,6 +299,9 @@ def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
                                  replace_empty: bool = True,
                                  k_anova: float = None) -> tuple:
     """Cleans train and test data by jet.
+
+    - Log transform with min of x train and x test.
+    - Standardize with mean and std of train.
 
     Args:
         y_tr_by_jet (list): y train labels by jet.
@@ -280,12 +318,21 @@ def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
     """
     # Clean train data
     cols_to_remove_by_jet = clean_data_by_jet(
-        y_tr_by_jet, x_tr_by_jet, replace_empty=replace_empty, std=False,
-        k_anova=k_anova)
+        y_tr_by_jet, x_tr_by_jet, replace_empty=replace_empty, log=False,
+        std=False, k_anova=k_anova)
 
     # Clean test data
     clean_data_by_jet(y_te_by_jet, x_te_by_jet, cols_to_remove_by_jet,
-                      replace_empty=replace_empty, std=False)
+                      replace_empty=replace_empty, log=False, std=False)
+
+    # Log transform train and test
+    for i in range(len(x_tr_by_jet)):
+        if not (np.all(x_tr_by_jet[i] > 0) and np.all(x_te_by_jet[i] > 0)):
+            min_ = min(np.min(x_tr_by_jet[i]), np.min(x_te_by_jet[i]))
+        else:
+            min_ = None
+        x_tr_by_jet[i] = log_transform(x_tr_by_jet[i], min_)
+        x_te_by_jet[i] = log_transform(x_te_by_jet[i], min_)
 
     # Standardize train and test using mean and std of train
     for i in range(len(x_tr_by_jet)):
