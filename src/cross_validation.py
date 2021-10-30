@@ -51,7 +51,7 @@ def build_poly(x: np.ndarray, degree: int) -> np.ndarray:
 
 def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
                           k_indices: int, k: int, param: Union[int, float],
-                          param_name: str, **kwargs) -> tuple:
+                          param_name: str, logi=False, **kwargs) -> tuple:
     """Performs an iteration of cross validation and returns accuracies.
 
     Args:
@@ -76,13 +76,18 @@ def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
     if param_name == 'degree':
         x_tr = build_poly(x_tr, param)
         x_te = build_poly(x_te, param)
+    if logi:
+        kwargs["initial_w"] = np.zeros((x_tr.shape[1], 1))
+
     # Give parameter to the optimizer
     else:
         kwargs[param_name] = param
 
     # Run optimization
     w, _ = optimizer(y_tr, x_tr, **kwargs)
-
+    if logi:
+        x_tr = np.c_[np.ones((y_tr.shape[0], 1)), x_tr]
+        x_te = np.c_[np.ones((y_te.shape[0], 1)), x_te]
     # Predict labels
     y_pred_tr = predict_labels(w, x_tr)
     y_pred_te = predict_labels(w, x_te)
@@ -97,7 +102,7 @@ def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
 def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
                    param_name: str, param_list: list, k_fold: int = 4,
                    verbose: int = 1, plot: bool = False,
-                   title: str = 'Cross validation results',
+                   title: str = 'Cross validation results', logi: bool = False,
                    **kwargs) -> Union[int, float]:
     """Returns the best parameter determined by cross validation.
 
@@ -136,7 +141,8 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
         for k in range(k_fold):
             # Calculate the accuracy for train and test data
             a_tr, a_te = cross_validation_iter(y, x, optimizer, k_indices, k,
-                                               param, param_name, **kwargs)
+                                               param, param_name, logi=logi,
+                                               **kwargs)
 
             # Add accuracies to lists
             acc_tr_k.append(a_tr)
