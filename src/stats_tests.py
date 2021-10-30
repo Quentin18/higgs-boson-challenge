@@ -14,12 +14,12 @@ def anova_test(y: np.ndarray, x: np.ndarray,
     Args:
         y (np.ndarray): input data features.
         x (np.ndarray): input data.
+        ind_col_anova (list) : index of x columns.
         label_b (int, optional): label of "b" event. Defaults to -1.
-        ind_col_anova (list) : index of x columns
 
     Returns:
         tuple : (ind_F, F) with F f_value of features sorted,
-        ind_F index of features
+        ind_F index of features.
     """
     tX_a, tX_b = split_by_label(y, x, label_b)
     mean_labels = [np.mean(tX_a, 0), np.mean(tX_b, 0)]
