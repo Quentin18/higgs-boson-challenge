@@ -51,7 +51,8 @@ def build_poly(x: np.ndarray, degree: int) -> np.ndarray:
 
 def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
                           k_indices: int, k: int, param: Union[int, float],
-                          param_name: str, logi=False, **kwargs) -> tuple:
+                          param_name: str, logi: bool = False,
+                          **kwargs) -> tuple:
     """Performs an iteration of cross validation and returns accuracies.
 
     Args:
@@ -62,6 +63,7 @@ def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
         k (int): fold number.
         param (int or float): value of parameter.
         param_name (str): name of the parameter to find ('degree' or 'lambda').
+        logi (bool, optional): True if logistic method. Defauts to False.
 
     Returns:
         tuple: acc_tr, acc_te.
@@ -76,18 +78,22 @@ def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
     if param_name == 'degree':
         x_tr = build_poly(x_tr, param)
         x_te = build_poly(x_te, param)
-    if logi:
-        kwargs["initial_w"] = np.zeros((x_tr.shape[1], 1))
-
     # Give parameter to the optimizer
     else:
         kwargs[param_name] = param
 
+    # Logistic case
+    if logi:
+        kwargs['initial_w'] = np.zeros((x_tr.shape[1], 1))
+
     # Run optimization
     w, _ = optimizer(y_tr, x_tr, **kwargs)
+
+    # Logistic case
     if logi:
         x_tr = np.c_[np.ones((y_tr.shape[0], 1)), x_tr]
         x_te = np.c_[np.ones((y_te.shape[0], 1)), x_te]
+
     # Predict labels
     y_pred_tr = predict_labels(w, x_tr)
     y_pred_te = predict_labels(w, x_te)
@@ -118,6 +124,7 @@ def get_best_param(y: np.ndarray, x: np.ndarray, optimizer: Callable,
         Defaults to False.
         title (str, optional): title of the plot.
         Defaults to 'Cross validation results'.
+        logi (bool, optional): True if logistic method. Defauts to False.
 
     Returns:
         int or float: best parameter.
