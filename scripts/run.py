@@ -26,7 +26,7 @@ from print_utils import (print_shapes, print_shapes_by_jet, print_subset_label,
 CLASSIFIER = 'ridge_regression'
 
 # Output file path
-OUTPUT_PATH = os.path.join(OUT_DIR, 'predictions_ridge_regression.csv')
+OUTPUT_PATH = os.path.join(OUT_DIR, 'predictions.csv')
 
 
 def main():

@@ -28,9 +28,9 @@ This is the structure of the repository:
 - `figs`: contains the figures (accuracies, confusion matrices, results of cross validation)
 - `scripts`: contains the main scripts and the notebooks
     - `main_accuracy_by_jet.py`: compute the accuracy with a classifier
-    - `main_predict_by_jet.py`: make predictions using ridge regression
     - `main_cross_validation.ipynb`: perform cross validation
     - `parameters.json`: parameters for optimization algorithms
+    - `run.py`: make predictions for AIcrowd using ridge regression
 - `src`: source code
     - `clean_data.py`: functions to clean data
     - `cross_validation.py`: functions to perform cross validation
@@ -43,6 +43,15 @@ This is the structure of the repository:
     - `print_utils.py`: print utils
     - `split_data.py`: split functions to handle data
     - `stats_tests.py`: statistical tests
+
+## Instructions
+
+To reproduce our submission on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs), move in the `scripts` folder and run:
+```
+python3 run.py
+```
+The csv file produced will be `out/predictions.csv`.
+
 
 ## Scripts
 
