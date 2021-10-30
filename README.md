@@ -95,8 +95,8 @@ Results of all models with the `run_accuracy.py` script:
 
 Model | Accuracy
 --- | ---
-Gradient descent | **TODO**
-Stochastic gradient descent | **TODO**
+Gradient descent | 0.715
+Stochastic gradient descent | 0.709
 Least squares | 0.827
 Ridge regression | 0.828
 Logistic regression | 0.760
