@@ -2,6 +2,12 @@
 
 Project 1 of the Machine Learning course given at the EPFL Fall 2021.
 
+## Team members
+
+- Quentin Deschamps
+- Emilien Seiler
+- Louis Le Guillouzic
+
 ## Strategy
 
 The main strategy is the following:
@@ -13,6 +19,7 @@ The main strategy is the following:
 - Clean the subsets individually:
     - Remove the columns with the same data at each row.
     - Replace -999 by the median of the column.
+    - Apply log transformation on the data.
     - Standardize the columns using the mean and the standard deviation of the train dataset.
 - Expand the features using polynomial expansion. The degree is determined using cross validation.
 - Perform ridge regression for each subset.
