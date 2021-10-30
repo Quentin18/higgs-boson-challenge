@@ -19,6 +19,31 @@ The main strategy is the following:
 - Predict the labels for each test subset using the model determined with each train subset.
 - Merge the results.
 
+## Structure
+
+This is the structure of the repository:
+
+- `data`: contains the datasets
+- `docs`: contains the documentation
+- `figs`: contains the figures (accuracies, confusion matrices, results of cross validation)
+- `scripts`: contains the main scripts and the notebooks
+    - `main_accuracy_by_jet.py`: compute the accuracy with a classifier
+    - `main_predict_by_jet.py`: make predictions using ridge regression
+    - `main_cross_validation.ipynb`: perform cross validation
+    - `parameters.json`: parameters for optimization algorithms
+- `src`: source code
+    - `clean_data.py`: functions to clean data
+    - `cross_validation.py`: functions to perform cross validation
+    - `gradient.py`: gradient functions
+    - `helpers.py`: utils functions
+    - `implementations.py`: Machine Learning algorithms implementations
+    - `loss.py`: loss functions
+    - `metrics.py`: score and performance functions
+    - `plot_utils.py`: plot utils using matplotlib
+    - `print_utils.py`: print utils
+    - `split_data.py`: split functions to handle data
+    - `stats_tests.py`: statistical tests
+
 ## Scripts
 
 - `main_accuracy_by_jet.py`: compute the accuracy of a classifier. The dataset is splited in 3 subsets.
@@ -45,7 +70,7 @@ Model | Accuracy
 --- | ---
 Gradient Descent | **TODO**
 Stochastic Gradient Descent | **TODO**
-Least squares | 0.824
-Ridge regression | 0.828
+Least squares | 0.827
+Ridge regression | 0.831
 Logistic regression | **TODO**
 Regularized logistic regression | **TODO**
