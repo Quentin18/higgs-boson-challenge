@@ -10,7 +10,7 @@ Project 1 of the Machine Learning course given at the EPFL Fall 2021.
 
 ## Instructions
 
-## Predictions for AIcrowd
+### Predictions for AIcrowd
 
 To reproduce our submission on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs), move in the `scripts` folder and run:
 ```
@@ -18,7 +18,7 @@ python3 run.py
 ```
 The csv file produced will be `out/predictions.csv`.
 
-## Accuracy score
+### Accuracy score
 
 To compute the accuracy scores obtained for each model, use the `run_accuracy.py` script. It loads the parameters of optimization algorithms in the `parameters.json` file. The figures are saved in the `figs` directory.
 
