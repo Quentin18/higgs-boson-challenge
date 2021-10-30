@@ -1,4 +1,4 @@
-# Machine Learning: Project 1 - Higgs Boson
+# Machine Learning: Project 1 - Higgs Boson Challenge
 
 Project 1 of the Machine Learning course given at the EPFL Fall 2021.
 
@@ -7,6 +7,41 @@ Project 1 of the Machine Learning course given at the EPFL Fall 2021.
 - Quentin Deschamps
 - Emilien Seiler
 - Louis Le Guillouzic
+
+## Instructions
+
+## Predictions for AIcrowd
+
+To reproduce our submission on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs), move in the `scripts` folder and run:
+```
+python3 run.py
+```
+The csv file produced will be `out/predictions.csv`.
+
+## Accuracy score
+
+To compute the accuracy scores obtained for each model, use the `run_accuracy.py` script. It loads the parameters of optimization algorithms in the `parameters.json` file. The figures are saved in the `figs` directory.
+
+The program shows:
+- The global accuracy score and the one for each subset.
+- The global confusion matrix and the one for each subset.
+
+Usage:
+```
+python3 run_accuracy.py --clf [CLASSIFIER]
+```
+Where `CLASSIFIER` can be:
+- `gradient_descent`
+- `stochastic_gradient_descent`
+- `least_squares`
+- `ridge_regression` (default)
+- `logistic_regression`
+- `regularized_logistic_regression`
+
+Options:
+- `--save`: save the figures in the `figs` folder.
+- `--hide`: hide the figures.
+- `-h, --help`: show help.
 
 ## Strategy
 
@@ -22,7 +57,7 @@ The main strategy is the following:
     - Apply log transformation on the data.
     - Standardize the columns using the mean and the standard deviation of the train dataset.
 - Expand the features using polynomial expansion. The degree is determined using cross validation.
-- Perform ridge regression for each subset.
+- Perform ridge regression on each subset.
 - Predict the labels for each test subset using the model determined with each train subset.
 - Merge the results.
 
@@ -34,7 +69,7 @@ This is the structure of the repository:
 - `docs`: contains the documentation
 - `figs`: contains the figures (accuracies, confusion matrices, results of cross validation)
 - `scripts`: contains the main scripts and the notebooks
-    - `main_cross_validation.ipynb`: perform cross validation
+    - `main_cross_validation.ipynb`: performs cross validation
     - `parameters.json`: parameters for optimization algorithms
     - `run_accuracy.py`: compute the accuracy with a classifier
     - `run.py`: make predictions for AIcrowd using ridge regression
@@ -51,42 +86,18 @@ This is the structure of the repository:
     - `split_data.py`: split functions to handle data
     - `stats_tests.py`: statistical tests
 
-## Instructions
-
-To reproduce our submission on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs), move in the `scripts` folder and run:
-```
-python3 run.py
-```
-The csv file produced will be `out/predictions.csv`.
-
-
-## Scripts
-
-- `run_accuracy.py`: compute the accuracy of a classifier. The dataset is splited in 3 subsets.
-It loads the parameters of optimization algorithms in the `parameters.json` file. The figures are saved in the `figs` directory.
-The program shows:
-    - The global accuracy score and the one for each subset.
-    - The global confusion matrix and the one for each subset.
-
-Usage:
-```
-python3 run_accuracy.py --clf [CLASSIFIER]
-```
-Where `CLASSIFIER` can be:
-- `gradient_descent`
-- `stochastic_gradient_descent`
-- `least_squares`
-- `ridge_regression` (default)
-- `logistic_regression`
-- `regularized_logistic_regression`
-
 ## Results
+
+Best accuracy score on AIcrowd: 0.831
+([link](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs/submissions/163118))
+
+Results of all models with the `run_accuracy.py` script:
 
 Model | Accuracy
 --- | ---
-Gradient Descent | **TODO**
-Stochastic Gradient Descent | **TODO**
+Gradient descent | **TODO**
+Stochastic gradient descent | **TODO**
 Least squares | 0.827
-Ridge regression | 0.831
-Logistic regression | **TODO**
-Regularized logistic regression | **TODO**
+Ridge regression | 0.828
+Logistic regression | 0.760
+Regularized logistic regression | 0.760
