@@ -22,9 +22,13 @@ def plot_counts(y: np.ndarray, title: str = 'Proportions', ax=None,
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
 
-    uniques, counts = np.unique(y, return_counts=True)
-    ax.bar(uniques, counts, tick_label=('s', 'b'),
+    # Plot bars
+    _, counts = np.unique(y, return_counts=True)
+    ax.bar((0, 1), counts, tick_label=('b', 's'),
            color=mcolors.TABLEAU_COLORS)
+
+    # Add labels
+    ax.set_ylabel('Counts')
     ax.set_title(title)
 
     # Show plot
