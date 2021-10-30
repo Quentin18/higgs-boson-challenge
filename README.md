@@ -69,8 +69,11 @@ This is the structure of the repository:
 - `docs`: contains the documentation
 - `figs`: contains the figures (accuracies, confusion matrices, results of cross validation)
 - `scripts`: contains the main scripts and the notebooks
+    - `csv_utils.py`: functions to load data and create submission
     - `main_cross_validation.ipynb`: performs cross validation
+    - `main_ridge_regression.ipynb`: explore the training dataset and compute accuracy score with ridge regression
     - `parameters.json`: parameters for optimization algorithms
+    - `path.py`: paths and procedures to manage archives and directories
     - `run_accuracy.py`: compute the accuracy with a classifier
     - `run.py`: make predictions for AIcrowd using ridge regression
 - `src`: source code
