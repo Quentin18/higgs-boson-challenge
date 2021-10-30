@@ -3,6 +3,7 @@ Generate predictions for AIcrowd.
 """
 # flake8: noqa: E402
 import os
+
 import numpy as np
 
 # Import functions from scripts/

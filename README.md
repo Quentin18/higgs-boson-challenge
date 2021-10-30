@@ -27,9 +27,9 @@ This is the structure of the repository:
 - `docs`: contains the documentation
 - `figs`: contains the figures (accuracies, confusion matrices, results of cross validation)
 - `scripts`: contains the main scripts and the notebooks
-    - `main_accuracy_by_jet.py`: compute the accuracy with a classifier
     - `main_cross_validation.ipynb`: perform cross validation
     - `parameters.json`: parameters for optimization algorithms
+    - `run_accuracy.py`: compute the accuracy with a classifier
     - `run.py`: make predictions for AIcrowd using ridge regression
 - `src`: source code
     - `clean_data.py`: functions to clean data
@@ -55,7 +55,7 @@ The csv file produced will be `out/predictions.csv`.
 
 ## Scripts
 
-- `main_accuracy_by_jet.py`: compute the accuracy of a classifier. The dataset is splited in 3 subsets.
+- `run_accuracy.py`: compute the accuracy of a classifier. The dataset is splited in 3 subsets.
 It loads the parameters of optimization algorithms in the `parameters.json` file. The figures are saved in the `figs` directory.
 The program shows:
     - The global accuracy score and the one for each subset.
@@ -63,7 +63,7 @@ The program shows:
 
 Usage:
 ```
-python3 main_accuracy_by_jet.py --clf [CLASSIFIER]
+python3 run_accuracy.py --clf [CLASSIFIER]
 ```
 Where `CLASSIFIER` can be:
 - `gradient_descent`
