@@ -82,7 +82,7 @@ def least_squares_SGD(y: np.ndarray, tx: np.ndarray, initial_w: np.ndarray,
     t_start = time.time()
 
     w = initial_w
-    for _ in range(max_iters):
+    for iter in range(max_iters):
         for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
             # Compute gradient
             grad = least_squares_gradient(minibatch_y, minibatch_tx, w)

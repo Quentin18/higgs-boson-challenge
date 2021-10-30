@@ -112,7 +112,10 @@ def main():
         # Get train subset
         x_tr_jet, y_tr_jet = x_tr_by_jet[i], y_tr_by_jet[i]
 
-        if is_logistic or is_gradient:
+        if is_gradient:
+            clf_params['initial_w'] = np.zeros(x_tr_jet.shape[1])
+
+        elif is_logistic:
             clf_params['initial_w'] = np.zeros((x_tr_jet.shape[1], 1))
 
         if lambdas:
