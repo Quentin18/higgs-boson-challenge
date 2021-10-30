@@ -49,9 +49,11 @@ def main():
         '--clf', choices=CLASSIFIERS,
         help='classifier to use (default: ridge_regression)',
         default='ridge_regression')
+    parser.add_argument('--save', action='store_true', help='save figures')
+    parser.add_argument('--hide', action='store_true', help='hide figures')
     args = parser.parse_args()
 
-    clf = args.clf
+    clf, save, hide = args.clf, args.save, args.hide
     clf_name = clf.replace('_', ' ')
 
     is_gradient = 'gradient' in clf
@@ -214,8 +216,9 @@ def main():
     plt.tight_layout()
 
     # Save figure
-    path = os.path.join(FIGS_DIR, f'confusion_matrix_{clf}.pdf')
-    plt.savefig(path)
+    if save:
+        path = os.path.join(FIGS_DIR, f'confusion_matrix_{clf}.pdf')
+        plt.savefig(path)
 
     # Plot accuracies
     plot_accuracies(accuracies + [global_accuracy],
@@ -223,10 +226,12 @@ def main():
     plt.tight_layout()
 
     # Save figure
-    path = os.path.join(FIGS_DIR, f'accuracy_{clf}.pdf')
-    plt.savefig(path)
+    if save:
+        path = os.path.join(FIGS_DIR, f'accuracy_{clf}.pdf')
+        plt.savefig(path)
 
-    plt.show()
+    if not hide:
+        plt.show()
 
 
 if __name__ == '__main__':
