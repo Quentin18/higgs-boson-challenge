@@ -36,7 +36,12 @@
         "gamma": 1e-05,
         "threshold": 1e-08,
         "verbose": 1,
-        "agd": true
+        "agd": true,
+        "degree": [
+            2,
+            2,
+            2
+        ]
     },
     "regularized_logistic_regression": {
         "lambda_": 0.01,
