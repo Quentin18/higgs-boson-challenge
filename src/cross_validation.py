@@ -76,21 +76,25 @@ def cross_validation_iter(y: np.ndarray, x: np.ndarray, optimizer: Callable,
     if param_name == 'degree':
         x_tr = build_poly(x_tr, param)
         x_te = build_poly(x_te, param)
-    if logi:
-        kwargs["initial_w"] = np.zeros((x_tr.shape[1], 1))
-
-    # Give parameter to the optimizer
+        # Give parameter to the optimizer
     else:
         kwargs[param_name] = param
 
+    if logi:
+        kwargs["initial_w"] = np.zeros((x_tr.shape[1], 1))
+
     # Run optimization
     w, _ = optimizer(y_tr, x_tr, **kwargs)
+
     if logi:
+        print("eee")
         x_tr = np.c_[np.ones((y_tr.shape[0], 1)), x_tr]
         x_te = np.c_[np.ones((y_te.shape[0], 1)), x_te]
-    # Predict labels
-    y_pred_tr = predict_labels(w, x_tr)
-    y_pred_te = predict_labels(w, x_te)
+        y_pred_tr = predict_labels(w, x_tr, label_b=0, use_sigmoid=True)
+        y_pred_te = predict_labels(w, x_te, label_b=0, use_sigmoid=True)
+    else:
+        y_pred_tr = predict_labels(w, x_tr)
+        y_pred_te = predict_labels(w, x_te)
 
     # Calculate accuracy
     acc_tr = accuracy_score(y_tr, y_pred_tr)
