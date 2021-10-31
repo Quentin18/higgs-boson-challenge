@@ -56,7 +56,8 @@ def main():
 
     is_gradient = 'gradient' in clf
     is_logistic = 'logistic' in clf
-    need_polynomial_expansion = clf in ('least_squares', 'ridge_regression')
+    need_polynomial_expansion = clf in ('least_squares', 'ridge_regression',
+                                        'logistic_regression')
     label_b = 0 if is_logistic else -1
 
     # Load the data
