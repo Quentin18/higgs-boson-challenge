@@ -1,6 +1,23 @@
 """
 Compute the accuracy score of a classification algorithm,
 and show confusion matrix.
+
+Usage:
+
+python3 run_accuracy.py --clf [CLASSIFIER]
+
+Where CLASSIFIER can be:
+- gradient_descent
+- stochastic_gradient_descent
+- least_squares
+- ridge_regression (default)
+- logistic_regression
+- regularized_logistic_regression
+
+Options:
+- --save: save the figures in the "figs" folder.
+- --hide: hide the figures.
+- -h, --help: show help.
 """
 # flake8: noqa: E402
 import argparse

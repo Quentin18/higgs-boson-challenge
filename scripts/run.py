@@ -1,5 +1,11 @@
 """
 Generate predictions for AIcrowd.
+
+Usage:
+
+python3 run.py
+
+The csv file produced will be "out/predictions.csv".
 """
 # flake8: noqa: E402
 import os
