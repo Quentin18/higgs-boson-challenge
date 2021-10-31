@@ -18,6 +18,20 @@ def get_mean_std(x: np.ndarray) -> tuple:
     return np.mean(x, axis=0), np.std(x, axis=0)
 
 
+def get_median_iqr(x: np.ndarray) -> tuple:
+    """Returns the median and the interquartile range of a matrix x by rows.
+
+    Args:
+        x (np.ndarray): matrix.
+
+    Returns:
+        tuple: median, iqr
+    """
+    median = np.median(x, axis=0)
+    iqr = np.subtract(*np.percentile(x, [75, 25], axis=0))
+    return median, iqr
+
+
 def log_transform(x: np.ndarray, min_: float = None) -> np.ndarray:
     """Applies a log transform on the matrix.
 
@@ -52,17 +66,20 @@ def standardize(x: np.ndarray, mean: np.ndarray = None,
     return (x - mean) / std
 
 
-def robust_scale(x: np.ndarray) -> np.ndarray:
+def robust_scale(x: np.ndarray, median: float = None,
+                 iqr: float = None) -> np.ndarray:
     """Scales the matrix x using robust scale.
 
     Args:
         x (np.ndarray): matrix.
+        median (float, optional): median.
+        iqr (float, optional): interquartile range.
 
     Returns:
         np.ndarray: x after robust scale.
     """
-    median = np.median(x, axis=0)
-    iqr = np.subtract(*np.percentile(x, [75, 25], axis=0))
+    if median is None or iqr is None:
+        median, iqr = get_median_iqr(x)
     return (x - median) / iqr
 
 
@@ -274,8 +291,8 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
         rob_scale (bool, optional): True to robust scale data.
         Defaults to False.
         k_anova: (float, optional): critical values for Anova test.
-        label_b: (int, optional): for anova test -1 or 1
-        Defaults to None.
+        label_b: (int, optional): label of "b" events for anova test -1 or 1.
+        Defaults to -1.
 
     Returns:
         list: columns to remove by jet.
@@ -296,12 +313,14 @@ def clean_data_by_jet(y_by_jet: list, x_by_jet: list,
 
 def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
                                  y_te_by_jet: list, x_te_by_jet: list,
-                                 replace_empty: bool = True,
+                                 replace_empty: bool = True, log: bool = True,
+                                 std: bool = True, rob_scale: bool = False,
                                  k_anova: float = None) -> tuple:
     """Cleans train and test data by jet.
 
-    - Log transform with min of x train and x test.
-    - Standardize with mean and std of train.
+    - Log transform with min of x train and x test (default: True).
+    - Standardize with mean and std of x train (default: True).
+    - Apply a robust scale with median and iqr of x train (default: False).
 
     Args:
         y_tr_by_jet (list): y train labels by jet.
@@ -309,6 +328,10 @@ def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
         y_te_by_jet (list): y test labels by jet.
         x_te_by_jet (list): x test matrices by jet.
         replace_empty (bool, optional): True to replace empty data by median.
+        Defaults to True.
+        log (bool, optional): True to appy log transform. Defaults to True.
+        std (bool, optional): True to standardize data. Defaults to False.
+        rob_scale (bool, optional): True to robust scale data.
         Defaults to True.
         k_anova: (float, optional): critical values for Anova test.
         Defaults to None.
@@ -326,18 +349,27 @@ def clean_train_test_data_by_jet(y_tr_by_jet: list, x_tr_by_jet: list,
                       replace_empty=replace_empty, log=False, std=False)
 
     # Log transform train and test
-    for i in range(len(x_tr_by_jet)):
-        if not (np.all(x_tr_by_jet[i] > 0) and np.all(x_te_by_jet[i] > 0)):
-            min_ = min(np.min(x_tr_by_jet[i]), np.min(x_te_by_jet[i]))
-        else:
-            min_ = None
-        x_tr_by_jet[i] = log_transform(x_tr_by_jet[i], min_)
-        x_te_by_jet[i] = log_transform(x_te_by_jet[i], min_)
+    if log:
+        for i in range(len(x_tr_by_jet)):
+            if not (np.all(x_tr_by_jet[i] > 0) and np.all(x_te_by_jet[i] > 0)):
+                min_ = min(np.min(x_tr_by_jet[i]), np.min(x_te_by_jet[i]))
+            else:
+                min_ = None
+            x_tr_by_jet[i] = log_transform(x_tr_by_jet[i], min_)
+            x_te_by_jet[i] = log_transform(x_te_by_jet[i], min_)
 
     # Standardize train and test using mean and std of train
-    for i in range(len(x_tr_by_jet)):
-        mean, std = get_mean_std(x_tr_by_jet[i])
-        x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
-        x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
+    if std:
+        for i in range(len(x_tr_by_jet)):
+            mean, std = get_mean_std(x_tr_by_jet[i])
+            x_tr_by_jet[i] = standardize(x_tr_by_jet[i])
+            x_te_by_jet[i] = standardize(x_te_by_jet[i], mean, std)
+
+    # Robust scale train and test using median and iqr of train
+    if rob_scale:
+        for i in range(len(x_tr_by_jet)):
+            median, iqr = get_median_iqr(x_tr_by_jet[i])
+            x_tr_by_jet[i] = robust_scale(x_tr_by_jet[i], median, iqr)
+            x_te_by_jet[i] = robust_scale(x_te_by_jet[i], median, iqr)
 
     return y_tr_by_jet, x_tr_by_jet, y_te_by_jet, x_te_by_jet
